@@ -9,4 +9,8 @@ Synchronized LED across bike lights
 
 ## Setup
 * Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
-* Install dependencies for easyMesh: SimpleList and ArduinoJson https://github.com/blackhack/ArduLibraries
+* Install dependencies for easyMesh:
+
+   * SimpleList: https://github.com/blackhack/ArduLibrariesand 
+
+   * ArduinoJson: https://github.com/bblanchon/ArduinoJson 

@@ -6,3 +6,6 @@ Synchronized LED across bike lights
 * 100pc 12mm WS281x
 * WEMOS D1 Mini
 * USB to barrel connector
+
+## Setup
+* Setup Arduino IDE for the WeMos D1 Mini:  https://github.com/esp8266/Arduino

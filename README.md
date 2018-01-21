@@ -8,4 +8,5 @@ Synchronized LED across bike lights
 * USB to barrel connector
 
 ## Setup
-* Setup Arduino IDE for the WeMos D1 Mini:  https://github.com/esp8266/Arduino
+* Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
+* Install dependencies for easyMesh: SimpleList and ArduinoJson https://github.com/blackhack/ArduLibraries

@@ -1,31 +1,3 @@
-#include <bitswap.h>
-#include <chipsets.h>
-#include <color.h>
-#include <colorpalettes.h>
-#include <colorutils.h>
-#include <controller.h>
-#include <cpp_compat.h>
-#include <dmx.h>
-#include <FastLED.h>
-#include <fastled_config.h>
-#include <fastled_delay.h>
-#include <fastled_progmem.h>
-#include <fastpin.h>
-#include <fastspi.h>
-#include <fastspi_bitbang.h>
-#include <fastspi_dma.h>
-#include <fastspi_nop.h>
-#include <fastspi_ref.h>
-#include <fastspi_types.h>
-#include <hsv2rgb.h>
-#include <led_sysdefs.h>
-#include <lib8tion.h>
-#include <noise.h>
-#include <pixelset.h>
-#include <pixeltypes.h>
-#include <platforms.h>
-#include <power_mgt.h>
-
 //************************************************************
 // this is a simple example that uses the easyMesh library
 //
@@ -33,98 +5,194 @@
 // 2. blink cycle repeats every BLINK_PERIOD
 // 3. sends a silly message to every node on the mesh at a random time betweew 1 and 5 seconds
 // 4. prints anything it recieves to Serial.print
-// 
+//
 //
 //************************************************************
-#include <easyMesh.h>
+#include <painlessMesh.h>
 
-// some gpio pin that is connected to an LED... 
+// some gpio pin that is connected to an LED...
 // on my rig, this is 5, change to the right number of your LED.
-#define   LED             2       // GPIO number of connected LED
+#define   LED             2       // GPIO number of connected LED, ON ESP-12 IS GPIO2
 
-#define   BLINK_PERIOD    1000000 // microseconds until cycle repeat
-#define   BLINK_DURATION  100000  // microseconds LED is on for
+#define   BLINK_PERIOD    3000 // milliseconds until cycle repeat
+#define   BLINK_DURATION  100  // milliseconds LED is on for
 
-#define   MESH_PREFIX     "whateverYouLike"
-#define   MESH_PASSWORD   "somethingSneeky"
+#define   MESH_SSID       "whateverYouLike"
+#define   MESH_PASSWORD   "somethingSneaky"
 #define   MESH_PORT       5555
 
-easyMesh  mesh;
+painlessMesh  mesh;
+bool calc_delay = false;
+SimpleList<uint32_t> nodes;
 
-uint32_t sendMessageTime = 0;
+void sendMessage() ; // Prototype
+Task taskSendMessage( TASK_SECOND * 1, TASK_FOREVER, &sendMessage ); // start with a one second interval
 
-// LED SETUP //
-#define NUM_LEDS 50
-#define DATA_PIN 13
-#define BRIGHTNESS  64
+// Task to blink the number of nodes
+Task blinkNoNodes;
+bool onFlag = false;
+
+/******* INIT LEDS *******/
+#include "FastLED.h"
+
+#define NUM_LEDS 72
+#define DATA_PIN 13 //D7
+
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
 
+/***** INIT BALLS *****/
+class Ball
+{
+  // Class Member Variables
+  // These are initialized at startup
+  public: uint8_t  angle;
+  public: CRGB color; 
+
+  // Constructor - initializes the member variables and state
+  public:
+  Ball(uint8_t  initAngle, CRGB initColor)
+  {
+    angle = initAngle;
+    color = initColor;   
+  }
+};
+
+Ball balls[5] = {
+  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
+  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
+  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
+  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
+  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
+};
+
+void showBalls(){
+  EVERY_N_MILLISECONDS(10)
+  {
+    for (int i = 0; i < mesh.getNodeList().size() +1; i++) {
+      uint8_t lead_dot = map(triwave8(balls[i].angle), 0, 255, 0, NUM_LEDS - 1);
+      
+      balls[i].angle = balls[i].angle + 1;
+      leds[lead_dot] = balls[i].color;
+      fadeToBlackBy(leds, NUM_LEDS, 32);
+    }
+  }
+
+  FastLED.show();
+}
 
 void setup() {
   Serial.begin(115200);
-    
-  pinMode( LED, OUTPUT );
 
-//mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
-  mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
+  pinMode(LED, OUTPUT);
 
-  mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
-  mesh.setReceiveCallback( &receivedCallback );
-  mesh.setNewConnectionCallback( &newConnectionCallback );
+  //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
+  //mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION | COMMUNICATION);  // set before init() so that you can see startup messages
+  mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);  // set before init() so that you can see startup messages
 
-  randomSeed( analogRead( A0 ) );  
+  mesh.init(MESH_SSID, MESH_PASSWORD, MESH_PORT);
+  //mesh.onReceive(&receivedCallback);
+  //mesh.onNewConnection(&newConnectionCallback);
+  //mesh.onChangedConnections(&changedConnectionCallback);
+  //mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
+  //mesh.onNodeDelayReceived(&delayReceivedCallback);
 
-  FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, NUM_LEDS);
-  FastLED.setBrightness(  BRIGHTNESS );
-  FastLED.show();
-  
+  //mesh.scheduler.addTask( taskSendMessage );
+  //taskSendMessage.enable() ;
+
+  blinkNoNodes.set(BLINK_PERIOD, (mesh.getNodeList().size() + 1) * 2, []() {
+      // If on, switch off, else switch on
+      if (onFlag)
+        onFlag = false;
+      else
+        onFlag = true;
+      blinkNoNodes.delay(BLINK_DURATION);
+
+      if (blinkNoNodes.isLastIteration()) {
+        // Finished blinking. Reset task for next run 
+        // blink number of nodes (including this node) times
+        blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
+        // Calculate delay based on current mesh time and BLINK_PERIOD
+        // This results in blinks between nodes being synced
+        blinkNoNodes.enableDelayed(BLINK_PERIOD - 
+            (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
+      }
+  });
+  mesh.scheduler.addTask(blinkNoNodes);
+  blinkNoNodes.enable();
+
+  randomSeed(analogRead(A0));
+
+  FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);;
 }
 
 void loop() {
   mesh.update();
-
-  // run the blinky
-  bool  onFlag = false;
-  uint32_t cycleTime = mesh.getNodeTime() % BLINK_PERIOD;
-  for ( uint8_t i = 0; i < ( mesh.connectionCount() + 1); i++ ) {
-    uint32_t onTime = BLINK_DURATION * i * 2;    
-
-    if ( cycleTime > onTime && cycleTime < onTime + BLINK_DURATION )
-      onFlag = true;
-  }
-  digitalWrite( LED, onFlag );
-
-  // get next random time for send message
-  if ( sendMessageTime == 0 ) {
-    sendMessageTime = mesh.getNodeTime() + random( 1000000, 5000000 );
-  }
-
-  // if the time is ripe, send everyone a message!
-  if ( sendMessageTime != 0 && sendMessageTime < mesh.getNodeTime() ){
-    String msg = String(random(0,255));
-    mesh.sendBroadcast( msg );
-    sendMessageTime = 0;
-  }
+  showBalls();
+  digitalWrite(LED, !onFlag);
 }
 
-void receivedCallback( uint32_t from, String &msg ) {
-  Serial.printf("startHere: Received from %d msg=%s\n", from, msg.c_str());
+void sendMessage() {
+  String msg = "Hello from node ";
+  msg += mesh.getNodeId();
+  msg += " myFreeMemory: " + String(ESP.getFreeHeap());
+  msg += " noTasks: " + String(mesh.scheduler.size());
+  bool error = mesh.sendBroadcast(msg);
 
-  sendColor(msg.toInt());
-}
-
-void newConnectionCallback( bool adopt ) {
-  Serial.printf("startHere: New Connection, adopt=%d\n", adopt);
-}
-
-void sendColor(int color){
-  for(int i = 0; i < NUM_LEDS; i++){
-    leds[i].setHue(color);
-    FastLED.show();
-    leds[i]= CRGB::Black;
+  if (calc_delay) {
+    SimpleList<uint32_t>::iterator node = nodes.begin();
+    while (node != nodes.end()) {
+      mesh.startDelayMeas(*node);
+      node++;
+    }
+    calc_delay = false;
   }
+
+  Serial.printf("Sending message: %s\n", msg.c_str());
+  
+  taskSendMessage.setInterval( random(TASK_SECOND * 1, TASK_SECOND * 5));  // between 1 and 5 seconds
 }
 
 
+void receivedCallback(uint32_t from, String & msg) {
+  Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
+}
+
+void newConnectionCallback(uint32_t nodeId) {
+  // Reset blink task
+  onFlag = false;
+  blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
+  blinkNoNodes.enableDelayed(BLINK_PERIOD - (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
+ 
+  Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
+}
+
+void changedConnectionCallback() {
+  Serial.printf("Changed connections %s\n", mesh.subConnectionJson().c_str());
+  // Reset blink task
+  onFlag = false;
+  blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
+  blinkNoNodes.enableDelayed(BLINK_PERIOD - (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
+ 
+  nodes = mesh.getNodeList();
+
+  Serial.printf("Num nodes: %d\n", nodes.size());
+  Serial.printf("Connection list:");
+
+  SimpleList<uint32_t>::iterator node = nodes.begin();
+  while (node != nodes.end()) {
+    Serial.printf(" %u", *node);
+    node++;
+  }
+  Serial.println();
+  calc_delay = true;
+}
+
+void nodeTimeAdjustedCallback(int32_t offset) {
+  Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(), offset);
+}
+
+void delayReceivedCallback(uint32_t from, int32_t delay) {
+  Serial.printf("Delay to node %u is %d us\n", from, delay);
+}

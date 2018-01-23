@@ -17,3 +17,5 @@ Total Estimated Cost: $23
    * SimpleList: https://github.com/blackhack/ArduLibrariesand 
 
    * ArduinoJson: https://github.com/bblanchon/ArduinoJson 
+
+![Wemos D1 Mini Pinout](https://www.projetsdiy.fr/wp-content/uploads/2016/05/esp8266-wemos-d1-mini-gpio-pins.jpg)

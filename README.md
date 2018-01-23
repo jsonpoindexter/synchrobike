@@ -11,8 +11,9 @@ Total Estimated Cost: $23
 
 ## Setup
 * Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
-* Install dependencies for easyMesh:
-
+* Arduino Dependencies:
+   * painlessMesh: https://gitlab.com/BlackEdder/painlessMesh
+   
    * SimpleList: https://github.com/blackhack/ArduLibrariesand 
 
    * ArduinoJson: https://github.com/bblanchon/ArduinoJson 

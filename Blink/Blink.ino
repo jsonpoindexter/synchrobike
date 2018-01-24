@@ -11,66 +11,80 @@
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
-class Ball
-{
-  // Class Member Variables
-  // These are initialized at startup
-  public: uint8_t  angle;
-  public: CRGB color;    // milliseconds of off-time
+#define MAX_BALLS 256
 
-  // Constructor - initializes the member variables and state
-  public:
-  Ball(uint8_t  initAngle, CRGB initColor)
-  {
-    angle = initAngle;
-    color = initColor;   
+int node_count = 0;
+
+struct Ball {
+  uint32_t id;
+  uint8_t  angle;
+  CRGB color;
+  uint8_t speed;
+};
+typedef struct Ball Ball;
+
+Ball balls[MAX_BALLS];
+
+void initBall(){
+  balls[0].id = 1234;
+  balls[0].angle = 0;
+  balls[0].color = CRGB(0,0,255);
+  balls[0].speed = random(1,5);
+  node_count++;
+}
+
+void addBall(){
+  balls[node_count].id = random();
+  balls[node_count].angle = 0;
+  balls[node_count].color = CRGB(random(0,255),random(0,255),random(0,255));
+  balls[node_count].speed = random(1,5);
+  node_count++;
+}
+
+void removeBall(){
+  if(node_count > 1){
+    node_count--;
   }
-};
+}
 
-
-Ball balls[] = {
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-};
 
 void setup() {
   Serial.begin(9600); 
   FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);
   randomSeed(analogRead(0));
-  initBalls();
+  initBall();
 }
 
 int lead_dot = 0;
-uint8_t  angle = 0;
+
+long previousMillis = 0;        // will store last time LED was updated
+long interval = 2000;           // interval at which to blink (milliseconds)
 
 void loop() 
 {
+
+  unsigned long currentMillis = millis();
+  if(currentMillis - previousMillis > interval) {
+    previousMillis = currentMillis;
+    if (random() % 2){
+       addBall();  
+    } else {
+      removeBall();
+    }
+  }
   
   EVERY_N_MILLISECONDS(10)
   {
-    for (int i = 0; i < sizeof(balls) / sizeof(Ball); i++){
+    for (int i = 0; i < node_count; i++){
       uint8_t lead_dot = map(triwave8(balls[i].angle), 0, 255, 0, NUM_LEDS - 1);
       
       balls[i].angle = balls[i].angle + 1;
       leds[lead_dot] = balls[i].color;
-      fadeToBlackBy(leds, NUM_LEDS, 32);
+     
     }
+     fadeToBlackBy(leds, NUM_LEDS, 32);
   }
 
   FastLED.show();
 
-  Serial.println(balls[0].angle);
-
 }
-
-void initBalls(){
-  for (int i = 0; i < sizeof(balls) / sizeof(Ball); i++){
-    balls[i].angle = random(0, 255);
-    balls[i].color = CRGB( random(0, 255), random(0, 255), random(0, 255));
-  }
-}
-

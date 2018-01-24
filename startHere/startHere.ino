@@ -25,8 +25,8 @@ painlessMesh  mesh;
 bool calc_delay = false;
 SimpleList<uint32_t> nodes;
 
-void sendMessage() ; // Prototype
-Task taskSendMessage( TASK_SECOND * 1, TASK_FOREVER, &sendMessage ); // start with a one second interval
+//void sendMessage() ; // Prototype
+//Task taskSendMessage( TASK_SECOND * 1, TASK_FOREVER, &sendMessage ); // start with a one second interval
 
 // Task to blink the number of nodes
 Task blinkNoNodes;
@@ -38,48 +38,51 @@ bool onFlag = false;
 #define NUM_LEDS 72
 #define DATA_PIN 13 //D7
 
+#define BRIGHTNESS  64
+
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
-
-/***** INIT BALLS *****/
-class Ball
-{
-  // Class Member Variables
-  // These are initialized at startup
-  public: uint8_t  angle;
-  public: CRGB color; 
-
-  // Constructor - initializes the member variables and state
-  public:
-  Ball(uint8_t  initAngle, CRGB initColor)
-  {
-    angle = initAngle;
-    color = initColor;   
-  }
+struct Ball {
+  uint32_t id;
+  uint8_t  angle;
+  CRGB color;
+  uint8_t speed;
 };
+typedef struct Ball Ball;
 
-Ball balls[5] = {
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-  Ball(random(0, 255),CRGB( random(0, 255), random(0, 255), random(0, 255))),
-};
+Ball balls[128];
+
+int ballIndex = 0;
 
 void showBalls(){
   EVERY_N_MILLISECONDS(10)
   {
-    for (int i = 0; i < mesh.getNodeList().size() +1; i++) {
+    for (int i = 0; i < mesh.getNodeList().size() + 1; i++) {
       uint8_t lead_dot = map(triwave8(balls[i].angle), 0, 255, 0, NUM_LEDS - 1);
       
       balls[i].angle = balls[i].angle + 1;
       leds[lead_dot] = balls[i].color;
-      fadeToBlackBy(leds, NUM_LEDS, 32);
+      
+    }
+    fadeToBlackBy(leds, NUM_LEDS, 32);
+  }
+  FastLED.show();
+}
+
+void addBall(int nodeId){
+  Serial.printf("***** Add ball: %d\n", nodeId);
+  for (int i = 0; i < ballIndex; i++){
+    if (balls[i].id == nodeId) {
+      printf("Node ID found!\n");
+      return;
     }
   }
-
-  FastLED.show();
+  balls[ballIndex].id = nodeId;
+  balls[ballIndex].angle = random(0, 255);
+  balls[ballIndex].color =  ColorFromPalette(RainbowColors_p, nodeId, BRIGHTNESS, LINEARBLEND);
+  ballIndex++;
+  Serial.printf("***** Ball ADDED: %d\n", nodeId);
 }
 
 void setup() {
@@ -93,8 +96,8 @@ void setup() {
 
   mesh.init(MESH_SSID, MESH_PASSWORD, MESH_PORT);
   //mesh.onReceive(&receivedCallback);
-  //mesh.onNewConnection(&newConnectionCallback);
-  //mesh.onChangedConnections(&changedConnectionCallback);
+  mesh.onNewConnection(&newConnectionCallback);
+  mesh.onChangedConnections(&changedConnectionCallback);
   //mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   //mesh.onNodeDelayReceived(&delayReceivedCallback);
 
@@ -124,7 +127,13 @@ void setup() {
 
   randomSeed(analogRead(A0));
 
-  FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);;
+  FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);
+
+
+  Serial.printf("***********Adding initial ball!*************\n");
+  addBall(mesh.getNodeId());
+
+  Serial.printf("***********done with setup!*************\n");
 }
 
 void loop() {
@@ -133,33 +142,13 @@ void loop() {
   digitalWrite(LED, !onFlag);
 }
 
-void sendMessage() {
-  String msg = "Hello from node ";
-  msg += mesh.getNodeId();
-  msg += " myFreeMemory: " + String(ESP.getFreeHeap());
-  msg += " noTasks: " + String(mesh.scheduler.size());
-  bool error = mesh.sendBroadcast(msg);
-
-  if (calc_delay) {
-    SimpleList<uint32_t>::iterator node = nodes.begin();
-    while (node != nodes.end()) {
-      mesh.startDelayMeas(*node);
-      node++;
-    }
-    calc_delay = false;
-  }
-
-  Serial.printf("Sending message: %s\n", msg.c_str());
-  
-  taskSendMessage.setInterval( random(TASK_SECOND * 1, TASK_SECOND * 5));  // between 1 and 5 seconds
-}
-
-
 void receivedCallback(uint32_t from, String & msg) {
   Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
 }
 
 void newConnectionCallback(uint32_t nodeId) {
+  Serial.printf("**************************newConnectionCallback() \n");
+  addBall(nodeId);
   // Reset blink task
   onFlag = false;
   blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
@@ -169,6 +158,7 @@ void newConnectionCallback(uint32_t nodeId) {
 }
 
 void changedConnectionCallback() {
+  Serial.printf("************changedConnectionCallback\n");
   Serial.printf("Changed connections %s\n", mesh.subConnectionJson().c_str());
   // Reset blink task
   onFlag = false;

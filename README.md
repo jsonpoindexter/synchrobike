@@ -1,7 +1,9 @@
 # synchrobike
 Synchronized LED across bike lights
 
-![Current Demo](https://i.imgur.com/fIpFSI2.gif)
+[Link to current animation demo](https://imgur.com/a/bO6bh)
+
+In the video each strip of LEDs is attached to 1 wireless microcontroller (so 3 total in the video). When each one boots up it initially puts a single led 'fish' going back and forth on the strip. The fish's color is derived from a unique hardware ID attached to the wireless device. When the wireless devices connect to each other they share hardware Id's and then automatically add the other devices 'fish' to their strip. 
 
 ## Components
 * [5V AA Battery Holder](https://www.aliexpress.com/item/Plastic-On-Off-Switch-4-x-1-5V-AA-Battery-Case-Holder-w-Cap-Black/32791164112.html?spm=2114.search0104.3.100.25bd57e7QmYioq&ws_ab_test=searchweb0_0,searchweb201602_3_10065_10344_10130_10068_10324_10342_10547_10325_10343_10546_10340_10548_10341_10545_10084_10617_10083_10616_10618_10615_10307_10313_10059_10534_100031_10103_441_10624_442_10623_10622_10621_10620_10142,searchweb201603_1,ppcSwitch_4&algo_expid=12c610c0-542a-4a46-a529-61155310b292-14&algo_pvid=12c610c0-542a-4a46-a529-61155310b292&priceBeautifyAB=2) ($1)

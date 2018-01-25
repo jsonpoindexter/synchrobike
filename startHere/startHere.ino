@@ -70,29 +70,37 @@ void showBalls(){
   FastLED.show();
 }
 
-void addBall(int nodeId){
-  Serial.printf("***** Add ball: %d\n", nodeId);
+void addBall(int nodeId, int brightness){
+  //Serial.printf("***** Add ball: %d\n", nodeId);
   for (int i = 0; i < ballIndex; i++){
     if (balls[i].id == nodeId) {
-      printf("Node ID found!\n");
+      //printf("Node ID found!\n");
       return;
     }
   }
+  addGlitter(16);
   balls[ballIndex].id = nodeId;
   balls[ballIndex].angle = random(0, 255);
-  balls[ballIndex].color =  ColorFromPalette(RainbowColors_p, nodeId, BRIGHTNESS, LINEARBLEND);
+  balls[ballIndex].color =  ColorFromPalette(RainbowColors_p, nodeId, brightness, LINEARBLEND);
   ballIndex++;
-  Serial.printf("***** Ball ADDED: %d\n", nodeId);
+  //Serial.printf("***** Ball ADDED: %d\n", nodeId);
+}
+
+//glitter effect
+void addGlitter( int chanceOfGlitter) {
+  for( int i = 0; i < chanceOfGlitter; i++) {
+    leds[ random16(NUM_LEDS) ] = CRGB::White;
+    }
 }
 
 void setup() {
-  Serial.begin(115200);
+  //Serial.begin(115200);
 
   pinMode(LED, OUTPUT);
 
   //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
   //mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION | COMMUNICATION);  // set before init() so that you can see startup messages
-  mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);  // set before init() so that you can see startup messages
+  //mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);  // set before init() so that you can see startup messages
 
   mesh.init(MESH_SSID, MESH_PASSWORD, MESH_PORT);
   //mesh.onReceive(&receivedCallback);
@@ -104,26 +112,26 @@ void setup() {
   //mesh.scheduler.addTask( taskSendMessage );
   //taskSendMessage.enable() ;
 
-  blinkNoNodes.set(BLINK_PERIOD, (mesh.getNodeList().size() + 1) * 2, []() {
-      // If on, switch off, else switch on
-      if (onFlag)
-        onFlag = false;
-      else
-        onFlag = true;
-      blinkNoNodes.delay(BLINK_DURATION);
-
-      if (blinkNoNodes.isLastIteration()) {
-        // Finished blinking. Reset task for next run 
-        // blink number of nodes (including this node) times
-        blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
-        // Calculate delay based on current mesh time and BLINK_PERIOD
-        // This results in blinks between nodes being synced
-        blinkNoNodes.enableDelayed(BLINK_PERIOD - 
-            (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
-      }
-  });
-  mesh.scheduler.addTask(blinkNoNodes);
-  blinkNoNodes.enable();
+//  blinkNoNodes.set(BLINK_PERIOD, (mesh.getNodeList().size() + 1) * 2, []() {
+//      // If on, switch off, else switch on
+//      if (onFlag)
+//        onFlag = false;
+//      else
+//        onFlag = true;
+//      blinkNoNodes.delay(BLINK_DURATION);
+//
+//      if (blinkNoNodes.isLastIteration()) {
+//        // Finished blinking. Reset task for next run 
+//        // blink number of nodes (including this node) times
+//        blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
+//        // Calculate delay based on current mesh time and BLINK_PERIOD
+//        // This results in blinks between nodes being synced
+//        blinkNoNodes.enableDelayed(BLINK_PERIOD - 
+//            (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
+//      }
+//  });
+//  mesh.scheduler.addTask(blinkNoNodes);
+//  blinkNoNodes.enable();
 
   randomSeed(analogRead(A0));
 
@@ -131,7 +139,7 @@ void setup() {
 
 
   Serial.printf("***********Adding initial ball!*************\n");
-  addBall(mesh.getNodeId());
+  addBall(mesh.getNodeId(), 255);
 
   Serial.printf("***********done with setup!*************\n");
 }
@@ -139,50 +147,49 @@ void setup() {
 void loop() {
   mesh.update();
   showBalls();
-  digitalWrite(LED, !onFlag);
+//  digitalWrite(LED, !onFlag);
 }
 
 void receivedCallback(uint32_t from, String & msg) {
-  Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
+//  Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
 }
 
 void newConnectionCallback(uint32_t nodeId) {
-  Serial.printf("**************************newConnectionCallback() \n");
-  addBall(nodeId);
+  //addBall(nodeId);
   // Reset blink task
-  onFlag = false;
-  blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
-  blinkNoNodes.enableDelayed(BLINK_PERIOD - (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
- 
-  Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
+//  onFlag = false;
+//  blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
+//  blinkNoNodes.enableDelayed(BLINK_PERIOD - (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
+// 
+  //Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
 }
 
 void changedConnectionCallback() {
-  Serial.printf("************changedConnectionCallback\n");
-  Serial.printf("Changed connections %s\n", mesh.subConnectionJson().c_str());
-  // Reset blink task
-  onFlag = false;
-  blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
-  blinkNoNodes.enableDelayed(BLINK_PERIOD - (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
+//  Serial.printf("Changed connections %s\n", mesh.subConnectionJson().c_str());
+//  // Reset blink task
+//  onFlag = false;
+//  blinkNoNodes.setIterations((mesh.getNodeList().size() + 1) * 2);
+//  blinkNoNodes.enableDelayed(BLINK_PERIOD - (mesh.getNodeTime() % (BLINK_PERIOD*1000))/1000);
  
   nodes = mesh.getNodeList();
 
-  Serial.printf("Num nodes: %d\n", nodes.size());
-  Serial.printf("Connection list:");
+//  Serial.printf("Num nodes: %d\n", nodes.size());
+//  Serial.printf("Connection list:");
 
   SimpleList<uint32_t>::iterator node = nodes.begin();
   while (node != nodes.end()) {
-    Serial.printf(" %u", *node);
+    addBall(*node, BRIGHTNESS);
+//    Serial.printf(" %u", *node);
     node++;
   }
-  Serial.println();
-  calc_delay = true;
+//  Serial.println();
+//  calc_delay = true;
 }
 
 void nodeTimeAdjustedCallback(int32_t offset) {
-  Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(), offset);
+//  Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(), offset);
 }
 
 void delayReceivedCallback(uint32_t from, int32_t delay) {
-  Serial.printf("Delay to node %u is %d us\n", from, delay);
+//  Serial.printf("Delay to node %u is %d us\n", from, delay);
 }

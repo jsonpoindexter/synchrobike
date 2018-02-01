@@ -28,14 +28,6 @@
 
 painlessMesh  mesh;
 bool calc_delay = false;
-//SimpleList<uint32_t> nodes;
-
-//void sendMessage() ; // Prototype
-//Task taskSendMessage( TASK_SECOND * 1, TASK_FOREVER, &sendMessage ); // start with a one second interval
-
-// Task to blink the number of nodes
-Task blinkNoNodes;
-bool onFlag = false;
 
 /******* INIT LEDS *******/
 #include "FastLED.h"
@@ -74,6 +66,7 @@ void showNodes(){
 }
 
 void addNode(int nodeId, int brightness){
+ 
   // Node newNode;
   // newNode.angle = random(0, 255);
   // newNode.color =  ColorFromPalette(RainbowColors_p, nodeId, brightness, LINEARBLEND);
@@ -126,6 +119,8 @@ void receivedCallback(uint32_t from, String & msg) {
 }
 
 void changedConnectionCallback() {
+  nodes = {};
+   addNode(mesh.getNodeId(), 255);
   for (auto& node : mesh.getNodeList()) {
     addNode(node, BRIGHTNESS);
   }

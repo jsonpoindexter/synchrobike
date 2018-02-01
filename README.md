@@ -5,6 +5,8 @@ Synchronized LED across bike lights
 
 In the video each strip of LEDs is attached to 1 wireless microcontroller (so 3 total in the video). When each one boots up it initially puts a single led 'fish' going back and forth on the strip. The fish's color is derived from a unique hardware ID attached to the wireless device. When the wireless devices connect to each other they share hardware Id's and then automatically add the other devices 'fish' to their strip. 
 
+Range: I was able to succesfully able to sync two nodes at a distance of 180m before running out of line of sight.
+
 ## Planned Features:
 * Synchronized LED animations across mesh nodes.
 * Animation(s) for when a new node is added to the mesh.

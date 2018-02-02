@@ -1,5 +1,6 @@
 #include <LinkedList.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <array>
 
 //************************************************************
@@ -45,7 +46,8 @@ struct Node {
   CRGB color;
 };
 
-std::unordered_map<int32_t, Node> nodes;
+std::unordered_map<uint32_t, Node> nodes;
+std::list<uint32_t> mesh_nodes;
 
 void showNodes(){
   EVERY_N_MILLISECONDS(10)
@@ -66,40 +68,19 @@ void showNodes(){
 }
 
 void addNode(int nodeId, int brightness){
- 
-  // Node newNode;
-  // newNode.angle = random(0, 255);
-  // newNode.color =  ColorFromPalette(RainbowColors_p, nodeId, brightness, LINEARBLEND);
   nodes.emplace(nodeId, Node { 
     angle: random(0, 255),
     color: ColorFromPalette(RainbowColors_p, nodeId, brightness, LINEARBLEND) 
   });
 }
 
-//
-////glitter effect
-//void addGlitter( int chanceOfGlitter) {
-//  for( int i = 0; i < chanceOfGlitter; i++) {
-//    int led = random16(NUM_LEDS);
-//    leds[led] = CRGB::White;
-//    leds[led].fadeToBlackBy( 16 );
-//  }
-//}
-
 void setup() {
   Serial.begin(115200);
 
   pinMode(LED, OUTPUT);
-
-  //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
-  //mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION | COMMUNICATION);  // set before init() so that you can see startup messages
-  //mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);  // set before init() so that you can see startup messages
-
   mesh.init(MESH_SSID, MESH_PASSWORD, MESH_PORT);
   
   mesh.onChangedConnections(&changedConnectionCallback);
-
-  //randomSeed(analogRead(A0));
 
   FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds.data(), NUM_LEDS);
 
@@ -114,15 +95,37 @@ void loop() {
   showNodes();
 }
 
-void receivedCallback(uint32_t from, String & msg) {
-//  Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
-}
 
 void changedConnectionCallback() {
-  nodes = {};
-   addNode(mesh.getNodeId(), 255);
-  for (auto& node : mesh.getNodeList()) {
-    addNode(node, BRIGHTNESS);
+  auto current_nodes = mesh.getNodeList();
+
+  std::unordered_set<uint32_t> existing_node_ids{current_nodes.begin(), current_nodes.end()};
+  existing_node_ids.insert(mesh.getNodeId());
+  
+  Serial.println("*** connection change***");
+  // 1. A node that is not in nodes will be in mesh.getNodeId()
+  // 2. a node that is in mesh.getNodeId() will not be in  
+
+  Serial.printf("mesh.getNodeList().size: %i\n", mesh_nodes.size());
+  Serial.printf("nodes.size: %i\n", nodes.size());
+  
+  for (auto& node : current_nodes) {
+    if (nodes.find(node) == nodes.end()) {
+      Serial.println("New node found");
+      addNode(node, BRIGHTNESS);
+    } else {
+      Serial.println("Not a new node");
+    }
   }
+
+  for(auto it = nodes.begin(); it != nodes.end(); ) {
+    // If this node ID is NOT in mesh_nodes, erase
+    if (existing_node_ids.find(it->first) == existing_node_ids.end()) {
+      it = nodes.erase(it);
+    } else {
+      it++;
+    }
+  }
+  
 }
 

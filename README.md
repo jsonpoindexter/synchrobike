@@ -34,4 +34,6 @@ Total Estimated Cost: $23
 
 Syncing Animations:
 - [ ] https://github.com/atuline/FastLED-Demos/blob/master/one_sine_pal_demo/one_sine_pal_demo.ino
+- [ ] Lightning bolt
+- [ ] Sparkles / Twinkle
 - [ ] More to come!

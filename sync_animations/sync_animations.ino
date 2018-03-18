@@ -83,9 +83,11 @@ void loop() {
 uint8_t prev_second_hand = 0;
 uint8_t prev_millisecond_hand = 0;
 
+bool direction = rand() % 2;
+
 void showAnimations(){
   int current_time = mesh.getNodeTime();
-  uint8_t millisecond_hand = (current_time / 10000) % 60; // 1 for 10s, 2 for 2s
+  uint8_t millisecond_hand = (current_time / 10000) % 60; // enter every 10ms
   if (prev_millisecond_hand != millisecond_hand) {   
     uint8_t maxChanges = 10; 
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);   // AWESOME palette blending capability.
@@ -93,11 +95,12 @@ void showAnimations(){
     prev_millisecond_hand = millisecond_hand;
   }
   
-  uint8_t second_hand = (current_time / 10000000) % 60; // 1 for 10s, 2 for 2s
+  uint8_t second_hand = (current_time / 10000000) % 60; // enter ever 1s
   if (prev_second_hand != second_hand) { 
     // Change the target palette to a random one every 5 seconds.
     randomSeed(second_hand);
     targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
+    direction = random(0,255) % 2;
     prev_second_hand = second_hand;
   }
   
@@ -110,11 +113,15 @@ void showAnimations(){
 void fillnoise8() {
   
   for(int i = 0; i < NUM_LEDS; i++) {                                      // Just ONE loop to fill up the LED array as all of the pixels change.
-    uint8_t index = inoise8(i*xscale, dist+i* yscale) % 255;                // Get a value from the noise function. I'm using both x and y axis.
+    uint8_t index = inoise8(i*xscale, dist+i* yscale) % 255;               // Get a value from the noise function. I'm using both x and y axis.
     leds[i] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND);   // With that value, look up the 8 bit colour palette value and assign it to the current LED.
   }
-  
-  dist += beatsin8(10,1,4, mesh.getNodeTime());                                                // Moving along the distance (that random number we started out with). Vary it a bit with a sine wave.
-                                                                           // In some sketches, I've used millis() instead of an incremented counter. Works a treat.
+
+  if (direction){ // Moving along the distance (that random number we started out with). Vary it a bit with a sine wave.
+    dist += beatsin8(10,1,4, mesh.getNodeTime());                        
+  } else {
+    dist -= beatsin8(10,1,4, mesh.getNodeTime()); 
+  }
+ 
 } // fillnoise8()
 

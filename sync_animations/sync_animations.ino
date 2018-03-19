@@ -82,30 +82,40 @@ void loop() {
 
 uint8_t prev_second_hand = 0;
 uint8_t prev_millisecond_hand = 0;
+uint8_t prev_direction_time = 0;
 
+uint8_t direction_change = random(5,10); // How many seconds to wait before animation scroll direction to change
 bool direction = rand() % 2;
 
 void showAnimations(){
   int current_time = mesh.getNodeTime();
-  uint8_t millisecond_hand = (current_time / 10000) % 60; // enter every 10ms
+  uint8_t millisecond_hand = (current_time / 10000 % 60); // enter every 10ms
   if (prev_millisecond_hand != millisecond_hand) {   
     uint8_t maxChanges = 10; 
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);   // AWESOME palette blending capability.
-    fillnoise8();                                                            // Update the LED array with noise at the new location
+    fillnoise8();                                                               // Update the LED array with noise at the new location
     prev_millisecond_hand = millisecond_hand;
   }
+
+  // chjange direction every random (s);
+  uint8_t direction_time = (current_time / 1000000 % 60) / direction_change;
+  if(prev_direction_time != direction_time) {
+    Serial.printf("directionChange has been reached: %u\n", direction_time);
+    randomSeed(direction_time);
+    direction = random(0,255) % 2;
+    direction_change = random(5,6);
+    prev_direction_time = direction_time;
+  }
   
-  uint8_t second_hand = (current_time / 10000000) % 60; // enter ever 1s
+  uint8_t second_hand = (current_time / 1000000 % 60) / 6;
   if (prev_second_hand != second_hand) { 
-    // Change the target palette to a random one every 5 seconds.
+    Serial.printf("change color pallet: %u\n", second_hand);
     randomSeed(second_hand);
     targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
-    direction = random(0,255) % 2;
     prev_second_hand = second_hand;
   }
   
   FastLED.show();
-
 }
 
 

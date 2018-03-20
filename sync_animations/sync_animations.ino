@@ -69,8 +69,9 @@ void setup() {
   FastLED.setBrightness(  BRIGHTNESS );
 
   set_max_power_in_volts_and_milliamps(5, 500);               // FastLED Power management set at 5V, 500mA.
-  
-  dist = random16(12345);                                     // A semi-random number for our noise generator
+
+  randomSeed(mesh.getNodeId());  // This will cause a semi-random pallet to be created on first boot.
+  dist = random16(mesh.getNodeId()); // A semi-random number for our noise generator
   
 }
 
@@ -101,7 +102,7 @@ void showAnimations(){
   uint8_t direction_time = (current_time / 1000000 % 60) / direction_change;
   if(prev_direction_time != direction_time) {
     Serial.printf("directionChange has been reached: %u\n", direction_time);
-    randomSeed(direction_time);
+    randomSeed(current_time / 1000000);
     direction = random(0,255) % 2;
     direction_change = random(5,6);
     prev_direction_time = direction_time;
@@ -109,8 +110,8 @@ void showAnimations(){
   
   uint8_t second_hand = (current_time / 1000000 % 60) / 6;
   if (prev_second_hand != second_hand) { 
-    Serial.printf("change color pallet: %u\n", second_hand);
-    randomSeed(second_hand);
+    Serial.printf("change color pallets: %u\n", second_hand);
+    randomSeed(current_time / 1000000);
     targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
     prev_second_hand = second_hand;
   }

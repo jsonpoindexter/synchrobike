@@ -37,6 +37,9 @@ uint16_t xscale = 30;                                         // Wouldn't recomm
 uint16_t yscale = 30;                                         // Wouldn't recommend changing this on the fly, or the animation will be really blocky.
 uint8_t maxChanges = 24;                                      // Value for blending between palettes.
 
+uint8_t direction_change; // How many seconds to wait before animation scroll direction to change
+uint8_t pallette_change; // How many seconds to wait before animation scroll direction to change
+
 void receivedCallback( uint32_t from, String &msg ) {
   Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
 }
@@ -71,6 +74,11 @@ void setup() {
   set_max_power_in_volts_and_milliamps(5, 500);               // FastLED Power management set at 5V, 500mA.
 
   randomSeed(mesh.getNodeId());  // This will cause a semi-random pallet to be created on first boot.
+  direction_change = random(5,10); // How many seconds to wait before animation scroll direction to change
+  pallette_change = random(4,8); // How many seconds to wait before animation scroll direction to change
+
+  targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
+  
   dist = random16(mesh.getNodeId()); // A semi-random number for our noise generator
   
 }
@@ -85,17 +93,17 @@ uint8_t prev_second_hand = 0;
 uint8_t prev_millisecond_hand = 0;
 uint8_t prev_direction_time = 0;
 
-uint8_t direction_change = random(5,10); // How many seconds to wait before animation scroll direction to change
 bool direction = rand() % 2;
 
 void showAnimations(){
   int current_time = mesh.getNodeTime();
   uint8_t millisecond_hand = (current_time / 10000 % 60); // enter every 10ms
   if (prev_millisecond_hand != millisecond_hand) {   
-    uint8_t maxChanges = 10; 
+    uint8_t maxChanges = 24; 
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);   // AWESOME palette blending capability.
     fillnoise8();                                                               // Update the LED array with noise at the new location
     prev_millisecond_hand = millisecond_hand;
+    FastLED.show();
   }
 
   // chjange direction every random (s);
@@ -113,13 +121,10 @@ void showAnimations(){
     Serial.printf("change color pallets: %u\n", second_hand);
     randomSeed(current_time / 1000000);
     targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
+    pallette_change = random(4,8);
     prev_second_hand = second_hand;
   }
-  
-  FastLED.show();
 }
-
-
  
 void fillnoise8() {
   

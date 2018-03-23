@@ -22,7 +22,7 @@ painlessMesh  mesh;
 #endif
 
 #define LED_PIN     13
-#define NUM_LEDS    75
+#define NUM_LEDS    50
 #define BRIGHTNESS  64
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
@@ -98,8 +98,7 @@ bool direction = rand() % 2;
 void showAnimations(){
   int current_time = mesh.getNodeTime();
   uint8_t millisecond_hand = (current_time / 10000 % 60); // enter every 10ms
-  if (prev_millisecond_hand != millisecond_hand) {   
-    uint8_t maxChanges = 24; 
+  if (prev_millisecond_hand != millisecond_hand) {    
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);   // AWESOME palette blending capability.
     fillnoise8();                                                               // Update the LED array with noise at the new location
     prev_millisecond_hand = millisecond_hand;
@@ -107,7 +106,7 @@ void showAnimations(){
   }
 
   // chjange direction every random (s);
-  uint8_t direction_time = (current_time / 1000000 % 60) / direction_change;
+  uint8_t direction_time = (current_time / 10000000 % 60) / direction_change;
   if(prev_direction_time != direction_time) {
     Serial.printf("directionChange has been reached: %u\n", direction_time);
     randomSeed(current_time / 1000000);
@@ -116,7 +115,7 @@ void showAnimations(){
     prev_direction_time = direction_time;
   }
   
-  uint8_t second_hand = (current_time / 1000000 % 60) / 6;
+  uint8_t second_hand = (current_time / 10000000 % 60) / 6;
   if (prev_second_hand != second_hand) { 
     Serial.printf("change color pallets: %u\n", second_hand);
     randomSeed(current_time / 1000000);
@@ -129,7 +128,7 @@ void showAnimations(){
 void fillnoise8() {
   
   for(int i = 0; i < NUM_LEDS; i++) {                                      // Just ONE loop to fill up the LED array as all of the pixels change.
-    uint8_t index = inoise8(i*xscale, dist+i* yscale) % 255;               // Get a value from the noise function. I'm using both x and y axis.
+    uint8_t index = inoise8(0, dist+i* yscale) % 255;               // Get a value from the noise function. I'm using both x and y axis.
     leds[i] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND);   // With that value, look up the 8 bit colour palette value and assign it to the current LED.
   }
 

@@ -1,9 +1,7 @@
 # synchrobike
 Synchronized LED across bike lights
 
-[Link to current animation demo](https://imgur.com/a/bO6bh)
-
-In the video each strip of LEDs is attached to 1 wireless microcontroller (so 3 total in the video). When each one boots up it initially puts a single led 'fish' going back and forth on the strip. The fish's color is derived from a unique hardware ID attached to the wireless device. When the wireless devices connect to each other they share hardware Id's and then automatically add the other devices 'fish' to their strip. 
+The goal of this project is to synchronize amazing LED animations and colors across countless wiresless LED nodes.
 
 Range: I was able to succesfully sync two nodes at a distance of 180m before running out of line of sight.
 
@@ -24,16 +22,16 @@ Total Estimated Cost: $23
 ## Setup
 * Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
 * Arduino Dependencies:
-   * painlessMesh: https://gitlab.com/BlackEdder/painlessMesh
+   * painlessMesh: https://gitlab.com/painlessMesh/painlessMesh
    
-   * SimpleList: https://github.com/blackhack/ArduLibrariesand 
-
-   * ArduinoJson: https://github.com/bblanchon/ArduinoJson 
+   * ArduinoJson(required by painlessMesh): https://github.com/bblanchon/ArduinoJson 
+   
+   * TaskScheduler(required by painlessMesh): https://github.com/arkhipenko/TaskScheduler
 
 ![Wemos D1 Mini Pinout](https://www.projetsdiy.fr/wp-content/uploads/2016/05/esp8266-wemos-d1-mini-gpio-pins.jpg)
 
 Syncing Animations:
-- [ ] https://github.com/atuline/FastLED-Demos/blob/master/one_sine_pal_demo/one_sine_pal_demo.ino
+- [x] https://github.com/atuline/FastLED-Demos/blob/master/one_sine_pal_demo/one_sine_pal_demo.ino
 - [ ] Lightning bolt
 - [ ] Sparkles / Twinkle
 - [ ] More to come!

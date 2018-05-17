@@ -1,11 +1,3 @@
-//************************************************************
-// this is a simple example that uses the painlessMesh library
-//
-// 1. sends a silly message to every node on the mesh at a random time betweew 1 and 5 seconds
-// 2. prints anything it recieves to Serial.print
-//
-//
-//************************************************************
 #include "painlessMesh.h"
 
 #define   MESH_PREFIX     "whateverYouLike"
@@ -23,7 +15,7 @@ painlessMesh  mesh;
 #endif
 
 #define LED_PIN     13
-#define NUM_LEDS    50
+#define NUM_LEDS    100
 #define BRIGHTNESS  64
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
@@ -98,15 +90,17 @@ bool direction = rand() % 2;
 
 void showAnimations(){
   int current_time = mesh.getNodeTime();
+
+  // Generate the animation ever (ms)
   uint8_t millisecond_hand = (current_time / 10000 % 60); // enter every 10ms
   if (prev_millisecond_hand != millisecond_hand) {    
-    nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);   // AWESOME palette blending capability.
+    nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);      // AWESOME palette blending capability.
     fillnoise8();                                                               // Update the LED array with noise at the new location
     prev_millisecond_hand = millisecond_hand;
     FastLED.show();
   }
 
-  // chjange direction every random (s);
+  // change direction every random (s);
   uint8_t direction_time = (current_time / 10000000 % 60) / direction_change;
   if(prev_direction_time != direction_time) {
     Serial.printf("directionChange has been reached: %u\n", direction_time);
@@ -115,7 +109,8 @@ void showAnimations(){
     direction_change = random(5,6);
     prev_direction_time = direction_time;
   }
-  
+
+  // change color pallet every random (s)
   uint8_t second_hand = (current_time / 10000000 % 60) / 6;
   if (prev_second_hand != second_hand) { 
     Serial.printf("change color pallets: %u\n", second_hand);
@@ -139,5 +134,5 @@ void fillnoise8() {
     dist -= beatsin8(10,1,4, mesh.getNodeTime()); 
   }
  
-} // fillnoise8()
+}
 

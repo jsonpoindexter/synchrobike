@@ -28,6 +28,8 @@ Total Estimated Cost: $23
 2. Install Arduino library dependencies:
     * FastLED (EPS8266 DMA Fork): https://github.com/coryking/FastLED  -*this fixes flickering caused by interupts on the ESP8226 and the WS281x's* 
 
+   * ESP8266TrueRandom: https://github.com/marvinroger/ESP8266TrueRandom
+   
    * painlessMesh: https://gitlab.com/painlessMesh/painlessMesh
         * And any painlessMesh dependencies: https://gitlab.com/painlessMesh/painlessMesh#dependencies
 3. Connect the WS281x to the Wemos D1 Mini:

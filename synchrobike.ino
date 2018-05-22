@@ -6,9 +6,10 @@
 
 painlessMesh  mesh;
 
-
+#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
+                            // WS281x LEDs must be unplugged while uploading sketch
 #include <FastLED.h>
-#define FASTLED_ESP8266_DMA
+
 
 #if FASTLED_VERSION < 3001000
 #error "Requires FastLED 3.1 or later; check github for latest code."

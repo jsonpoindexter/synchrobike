@@ -3,7 +3,11 @@ Synchronized LED across bike lights
 
 The goal of this project is to synchronize amazing LED animations and colors across countless wiresless LED nodes.
 
-Range: I was able to succesfully sync two nodes at a distance of 180m before running out of line of sight.
+Range: I was able to successfully sync two nodes at a distance of 180m before running out of line of sight.
+Current code 
+
+## Current Status:
+Sudo-randomly generated noise LED animation, color pallets, and animation direction sync with all nodes connected to the mesh network.
 
 ## Planned Features:
 * Synchronized LED animations across mesh nodes.
@@ -20,13 +24,23 @@ Range: I was able to succesfully sync two nodes at a distance of 180m before run
 Total Estimated Cost: $23
 
 ## Setup
-* Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
-* Arduino Dependencies:
+1. Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
+2. Install Arduino library dependencies:
+    * FastLED (EPS8266 DMA Fork): https://github.com/coryking/FastLED  -*this fixes flickering caused by interupts on the ESP8226 and the WS281x's* 
+
    * painlessMesh: https://gitlab.com/painlessMesh/painlessMesh
+        * And any painlessMesh dependencies: https://gitlab.com/painlessMesh/painlessMesh#dependencies
+3. Connect the WS281x to the Wemos D1 Mini:
+
+| **WS281x**        |   **Wemos D1 Mini**| 
+| :-------------: |:-------------: |
+| Digital In (DI) | GPIO3 (Rx)
+| Ground      | Ground       |
+| 5v / Vcc | 5v       |
+
+4. Connect your power source's 5v and Ground to the **WS2811x's dedicated 5v and Ground cables that are separate from the JST connectors.**  
    
-   * ArduinoJson(required by painlessMesh): https://github.com/bblanchon/ArduinoJson 
-   
-   * TaskScheduler(required by painlessMesh): https://github.com/arkhipenko/TaskScheduler
+## Pinout
 
 ![Wemos D1 Mini Pinout](https://www.projetsdiy.fr/wp-content/uploads/2016/05/esp8266-wemos-d1-mini-gpio-pins.jpg)
 

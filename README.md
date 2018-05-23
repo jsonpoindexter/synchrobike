@@ -7,15 +7,15 @@ Range: I was able to successfully sync two nodes at a distance of 180m before ru
 Current code 
 
 ## Current Status:
-- [x] Sudo-randomly generated noise LED animation, color pallets, and animation direction sync with all nodes connected to the mesh network.
+- [x] Sudo-randomly generated noise LED animation, color pallets, and animation direction synchronized with all nodes connected to the mesh network.
 - [ ] Create Hardware and Software sections detailing how components are conected and how to upload sketch to the Wemos D1 Mini.
 - [ ] Power section detailing power usage at different brightness and LED count.
 - [ ] Include video/gif demo of synchrobike(s) in action.
+- [ ] Animation(s) for when a new node is added to the mesh.
+- [ ] Random synchonized sparkle animations.
 
 ## Planned Features:
 * Synchronized LED animations across mesh nodes.
-* Animation(s) for when a new node is added to the mesh.
-* Well documented DIY instructions.
 
 ## Components
 * [5V AA Battery Holder](https://www.aliexpress.com/item/Plastic-On-Off-Switch-4-x-1-5V-AA-Battery-Case-Holder-w-Cap-Black/32791164112.html) ($1)

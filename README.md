@@ -7,9 +7,9 @@ Range: I was able to successfully sync two nodes at a distance of 180m before ru
 Current code 
 
 ## Current Status:
-[X] Sudo-randomly generated noise LED animation, color pallets, and animation direction sync with all nodes connected to the mesh network.
-[] Create Hardware and Software sections detailing how components are conected and how to upload sketch to the Wemos D1 Mini.
-[] Power section detailing power usage at different brightness and LED count.
+- [x] Sudo-randomly generated noise LED animation, color pallets, and animation direction sync with all nodes connected to the mesh network.
+- [ ] Create Hardware and Software sections detailing how components are conected and how to upload sketch to the Wemos D1 Mini.
+- [ ] Power section detailing power usage at different brightness and LED count.
 
 ## Planned Features:
 * Synchronized LED animations across mesh nodes.

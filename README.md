@@ -23,7 +23,7 @@ Sudo-randomly generated noise LED animation, color pallets, and animation direct
 
 Total Estimated Cost: $23
 
-## Setup
+## Wemos D1 Mini Setup
 1. Setup Arduino IDE for the ESP8266 (Wemos D1 Mini):  https://github.com/esp8266/Arduino
 2. Install Arduino library dependencies:
     * FastLED (EPS8266 DMA Fork): https://github.com/coryking/FastLED  -*this fixes flickering caused by interupts on the ESP8226 and the WS281x's* 
@@ -41,7 +41,11 @@ Total Estimated Cost: $23
 | 5v / Vcc | 5v       |
 
 4. Connect your power source's 5v and Ground to the **WS2811x's dedicated 5v and Ground cables that are separate from the JST connectors.**  
-   
+
+5. Upload `syncrhobike.ino` to the Wemos D1 Mini 
+
+**Note: It is suggested to unplug the LEDs from the Wemos D1 Mini while uploading the sketch. The LEDs being on the RX pin means that they can possibly interfeer with the upload, and will turn a very bright white.**
+
 ## Pinout
 
 ![Wemos D1 Mini Pinout](https://www.projetsdiy.fr/wp-content/uploads/2016/05/esp8266-wemos-d1-mini-gpio-pins.jpg)

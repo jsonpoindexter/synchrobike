@@ -51,9 +51,3 @@ Total Estimated Cost: ~$25
 ## Pinout
 
 ![Wemos D1 Mini Pinout](https://www.projetsdiy.fr/wp-content/uploads/2016/05/esp8266-wemos-d1-mini-gpio-pins.jpg)
-
-Syncing Animations:
-- [x] https://github.com/atuline/FastLED-Demos/blob/master/one_sine_pal_demo/one_sine_pal_demo.ino
-- [ ] Lightning bolt
-- [ ] Sparkles / Twinkle
-- [ ] More to come!

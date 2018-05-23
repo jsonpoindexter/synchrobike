@@ -13,6 +13,7 @@ Current code
 - [ ] Include video/gif demo of synchrobike(s) in action.
 - [ ] Animation(s) for when a new node is added to the mesh.
 - [ ] Random synchonized sparkle animations.
+- [ ] Animation speed linked to mesh nodes count. 
 
 ## Planned Features:
 * Synchronized LED animations across mesh nodes.

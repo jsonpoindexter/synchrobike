@@ -10,6 +10,7 @@ Current code
 - [x] Sudo-randomly generated noise LED animation, color pallets, and animation direction sync with all nodes connected to the mesh network.
 - [ ] Create Hardware and Software sections detailing how components are conected and how to upload sketch to the Wemos D1 Mini.
 - [ ] Power section detailing power usage at different brightness and LED count.
+- [ ] Include video/gif demo of synchrobike(s) in action.
 
 ## Planned Features:
 * Synchronized LED animations across mesh nodes.

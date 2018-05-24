@@ -124,15 +124,14 @@ void showAnimations(){
     int random_seed = current_time / 1000000;
     if(force_change){
       randomSeed(previous_seed);
+      force_change = false;
     } else {
       randomSeed(random_seed);
       previous_seed = random_seed; //TODO there is probably a mathmatical way to do this.
     }
-    
     Serial.printf("SYNCHROBIKE: change color pallets: %u\n", second_hand);
     targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
     prev_second_hand = second_hand;
-    force_change = false;
   }
 }
  

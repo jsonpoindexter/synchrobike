@@ -8,7 +8,7 @@ painlessMesh  mesh;
 
 #include <ESP8266TrueRandom.h>
 
-#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
+//#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
                             // WS281x LEDs must be unplugged while uploading sketch
 #include <FastLED.h>
 
@@ -16,16 +16,13 @@ painlessMesh  mesh;
 #error "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define LED_PIN     13
+#define LED_PIN     13 // This pin is ignorred when using FASTLED_ESP8266_DMA
 #define NUM_LEDS    100
-#define BRIGHTNESS  64
+#define BRIGHTNESS  64 // 0 - 255
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
 
-// 1 = 5 sec per palette
-// 2 = 10 sec per palette
-// etc
 #define HOLD_PALETTES_X_TIMES_AS_LONG 30
 
 CRGBPalette16 currentPalette(CRGB::Black);
@@ -74,8 +71,7 @@ void setup() {
   FastLED.setBrightness(  BRIGHTNESS );
 
   set_max_power_in_volts_and_milliamps(5, 500);               // FastLED Power management set at 5V, 500mA.
-
-//  randomSeed(mesh.getNodeId());  // This will cause a semi-random pallet to be created on first boot.
+  
   randomSeed(ESP8266TrueRandom.random());
   direction_change = random(5,10); // How many seconds to wait before animation scroll direction to change
   pallette_change = random(4,8); // How many seconds to wait before animation scroll direction to change
@@ -91,7 +87,7 @@ void loop() {
   showAnimations();
 }
 
-
+int previous_seed = 0;
 uint8_t prev_second_hand = 0;
 uint8_t prev_millisecond_hand = 0;
 uint8_t prev_direction_time = 0;
@@ -104,7 +100,8 @@ void showAnimations(){
 
   // Generate the animation ever (ms)
   uint8_t millisecond_hand = (current_time / 10000 % 60); // enter every 10ms
-  if (prev_millisecond_hand != millisecond_hand) {    
+  if (prev_millisecond_hand != millisecond_hand) {   
+    Serial.println(current_time); 
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);      // AWESOME palette blending capability.
     fillnoise8();                                                               // Update the LED array with noise at the new location
     prev_millisecond_hand = millisecond_hand;
@@ -122,11 +119,16 @@ void showAnimations(){
 //  }
 
   // change color pallet every random (s)
-  
-//  uint8_t second_hand = (current_time / 1000000 % 60) / 6;
  uint8_t second_hand = ((current_time / 1000000)  % 60) / HOLD_PALETTES_X_TIMES_AS_LONG;
   if ((prev_second_hand != second_hand) || force_change) {
-    randomSeed(second_hand);
+    int random_seed = current_time / 1000000;
+    if(force_change){
+      randomSeed(previous_seed);
+    } else {
+      randomSeed(random_seed);
+      previous_seed = random_seed; //TODO there is probably a mathmatical way to do this.
+    }
+    
     Serial.printf("SYNCHROBIKE: change color pallets: %u\n", second_hand);
     targetPalette = CRGBPalette16(CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 255, random(128,255)), CHSV(random(0,255), 192, random(128,255)), CHSV(random(0,255), 255, random(128,255)));
     prev_second_hand = second_hand;

@@ -40,6 +40,15 @@ boolean force_pallet_change = false;
 uint8_t direction_change; // How many seconds to wait before animation scroll direction to change
 uint8_t pallette_change; // How many seconds to wait before animation scroll direction to change
 
+// Define variables used by the sequences.
+uint8_t  thisfade = 8;                                        // How quickly does it fade? Lower = slower fade rate.
+int       thishue = 192;                                       // Starting hue.
+uint8_t   thisinc = 2;                                        // Incremental value for rotating hues
+uint8_t   thissat = 255;                                      // The saturation, where 255 = brilliant colours.
+uint8_t   thisbri = 255;                                      // Brightness of a sequence. Remember, max_bright is the overall limiter.
+int       huediff = 256;                                      // Range of random #'s to use for hue
+
+
 void receivedCallback( uint32_t from, String &msg ) {
   Serial.printf("SYSTEM: Received from %u msg=%s\n", from, msg.c_str());
 }
@@ -118,16 +127,44 @@ void showAnimation(){
 // Generate the animation ever (ms)
 void showLEDs(){
     // Generate the animation ever (ms)
-    int millis = getMillis() / 10;
-    if (prev_millis != millis) {
+    EVERY_N_MILLISECONDS(10) {
         switch((getSecond() / 30) % 2) {
             case 0:
-                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);   // AWESOME palette blending capability.
+                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
                 fillnoise8();
+                break;
             case 1:
+                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+                thisinc=1;
+                thishue=192;
+                thissat=255;
+                thisfade=2;
+                huediff=256;
                 confetti();
+                break;
+//            case 2:
+//                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+//                thisfade = 8;
+//                thishue = 50;
+//                thisinc = 1;
+//                thissat = 100;
+//                huediff = 256;
+//                confetti();
+//            case 3:
+//                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+//                thisinc=2;
+//                thishue=128;
+//                thisfade=8;
+//                huediff=64;
+//                confetti();
+//            case 4:
+//                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+//                thisinc=1;
+//                thishue=random16(255);
+//                thisfade=1;
+//                huediff=16;
+//                confetti();
         }
-        prev_millis = millis;
         FastLED.show();
     }
 }
@@ -173,29 +210,11 @@ void changeDirection(){
 }
 
 /* =============== CONFETTI ANIMATION =============== */
-// Define variables used by the sequences.
-uint8_t  thisfade = 8;                                        // How quickly does it fade? Lower = slower fade rate.
-int       thishue = 50;                                       // Starting hue.
-uint8_t   thisinc = 1;                                        // Incremental value for rotating hues
-uint8_t   thissat = 100;                                      // The saturation, where 255 = brilliant colours.
-uint8_t   thisbri = 255;                                      // Brightness of a sequence. Remember, max_bright is the overall limiter.
-int       huediff = 256;                                      // Range of random #'s to use for hue
-uint8_t thisdelay = 5;
+
 
 void confetti() {                                             // random colored speckles that blink in and fade smoothly
     fadeToBlackBy(leds, NUM_LEDS, thisfade);                    // Low values = slower fade.
     int pos = random16(NUM_LEDS);                               // Pick an LED at random.
-    leds[pos] = ColorFromPalette(currentPalette, thishue + random16(huediff)/4 , thisbri, currentBlending);
-    thishue = thishue + thisinc;                                   // It increments here.
+    leds[pos] = ColorFromPalette(currentPalette, thishue  , thisbri, currentBlending);
+//    thishue = thishue + thisinc;                                   // It increments here.
 }
-
-
-//void changeConfetti() {                                             // A time (rather than loop) based demo sequencer. This gives us full control over the length of each sequence.
-//    thisinc = 1;
-//    thishue = 192;
-//    thissat = 255;
-//    thisfade = 18;
-//    huediff = 256;
-//}
-
-

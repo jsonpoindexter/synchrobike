@@ -8,7 +8,7 @@ painlessMesh  mesh;
 
 #include <ESP8266TrueRandom.h>
 
-//#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
+#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
                             // WS281x LEDs must be unplugged while uploading sketch
 #include <FastLED.h>
 
@@ -119,37 +119,54 @@ int16_t getMinute(){
 
 
 void showAnimation(){
-    changePalette();
+   
     showLEDs();
-
 }
+
+int prevAnimation = 0;
 
 // Generate the animation ever (ms)
 void showLEDs(){
     // Generate the animation ever (ms)
     EVERY_N_MILLISECONDS(10) {
-        switch((getSecond() / 30) % 2) {
+        int animation = (getSecond() / 20) % 3;
+        if(animation != prevAnimation){
+            prevAnimation = animation;
+            Serial.printf("animation: %u\n", animation);
+        }
+        switch(animation) {
             case 0:
                 nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+                changePalette();
                 fillnoise8();
                 break;
             case 1:
+                changePalette();
+                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+                confettiNoise8();
+                break;
+             case 2:
+                // Sparkles, single color 
+                changePalette();
                 nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
                 thisinc=1;
-                thishue=192;
+                thishue=0;
                 thissat=255;
                 thisfade=2;
-                huediff=256;
+                huediff=128;
                 confetti();
                 break;
-//            case 2:
-//                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
-//                thisfade = 8;
-//                thishue = 50;
-//                thisinc = 1;
-//                thissat = 100;
-//                huediff = 256;
-//                confetti();
+            // case 3:
+            //     // Sparkles, single color 
+            //     changePalette();
+            //     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
+            //     thisinc=1;
+            //     thishue=0;
+            //     thissat=255;
+            //     thisfade=2;
+            //     huediff=256;
+            //     confetti();
+            //     break;
 //            case 3:
 //                nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);
 //                thisinc=2;
@@ -214,7 +231,15 @@ void changeDirection(){
 
 void confetti() {                                             // random colored speckles that blink in and fade smoothly
     fadeToBlackBy(leds, NUM_LEDS, thisfade);                    // Low values = slower fade.
-    int pos = random16(NUM_LEDS);                               // Pick an LED at random.
-    leds[pos] = ColorFromPalette(currentPalette, thishue  , thisbri, currentBlending);
-//    thishue = thishue + thisinc;                                   // It increments here.
+    int pos = random16(NUM_LEDS); 
+    leds[pos] = ColorFromPalette(currentPalette,  thishue + random16(huediff)/4, thisbri, currentBlending);
+    thishue = thishue + thisinc;                                   // It increments here.
+}
+
+void confettiNoise8(){
+    fadeToBlackBy(leds, NUM_LEDS, thisfade);   
+    int pos = random16(NUM_LEDS);          
+    uint8_t index = inoise8(0, dist+pos* yscale) % 255;
+    leds[pos] = ColorFromPalette(currentPalette, index, thisbri, currentBlending);
+    dist += beatsin8(10,1,4, millis());       
 }

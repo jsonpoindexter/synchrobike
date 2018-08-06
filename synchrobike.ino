@@ -18,7 +18,7 @@ painlessMesh  mesh;
 
 #define LED_PIN     13 // This pin is ignorred when using FASTLED_ESP8266_DMA
 #define NUM_LEDS    50
-#define BRIGHTNESS  64
+#define BRIGHTNESS  64 // Range 0 - 255
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
@@ -195,6 +195,23 @@ void showPallet() {
 }
 
 void changePalette(){
+  // change color pallet every random (s)
+  int second = getSecond() / HOLD_PALETTES_X_TIMES_AS_LONG;
+  if ((prev_second != second) || force_pallet_change) {
+      Serial.printf("Change color pallet %u\n", second);
+      randomSeed(second);
+      targetPalette = CRGBPalette16(
+        CHSV(random(0,255), 255, random(128,255)),
+        CHSV(random(0,255), 255, random(128,255)),
+        CHSV(random(0,255), 192, random(128,255)),
+        CHSV(random(0,255), 255, random(128,255)));
+      prev_second = second;
+      force_pallet_change = false;
+  }
+}
+
+// Forces complementary colors, which is always pleasant but doesn't give great variety over time.
+void changePaletteComplementary(){
   // change color pallet every random (s)
   int second = getSecond() / HOLD_PALETTES_X_TIMES_AS_LONG;
   if ((prev_second != second) || force_pallet_change) {

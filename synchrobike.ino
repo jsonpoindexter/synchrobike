@@ -8,7 +8,7 @@ painlessMesh  mesh;
 
 #include <ESP8266TrueRandom.h>
 
-//#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
+#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
                             // WS281x LEDs must be unplugged while uploading sketch
 #include <FastLED.h>
 
@@ -17,7 +17,7 @@ painlessMesh  mesh;
 #endif
 
 #define LED_PIN     13 // This pin is ignorred when using FASTLED_ESP8266_DMA
-#define NUM_LEDS    75
+#define NUM_LEDS    50
 #define BRIGHTNESS  64
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB

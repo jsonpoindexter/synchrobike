@@ -5,6 +5,7 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
+lib/*
 
 ### VisualStudioCode ###
 .vscode
@@ -20,3 +21,5 @@
 .vscode/launch.json
 
 .idea
+
+.DS_Store

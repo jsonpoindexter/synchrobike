@@ -3,6 +3,7 @@ import subprocess
 import serial.tools.list_ports
 import os, sys, platform, subprocess, time
 from pathlib import Path
+from termcolor import colored
 
 platform = platform.system()
 home = str(Path.home())
@@ -31,15 +32,26 @@ home = str(Path.home())
 # Write to devices
 
 serial_devices = serial.tools.list_ports.comports()
-connected = []
+successful = []
+unsuccessful = []
 for serial_device in serial_devices:
     port = serial_device.device
-    # if port !=  "/dev/cu.Bluetooth-Incoming-Port":
-    if platform == 'Linux' or 'Darwin' or 'posix':
-        command = home + "/.platformio/penv/bin/platformio run --target upload --upload-port " + port
-        subprocess.call(command, shell=True)
-        connected.append(serial_device.device)
-    else:
-        sys.exit("os " + platform + " unsupported yet!")
-        
-print("Connected COM ports: " + str(connected))
+    if port !=  "/dev/cu.Bluetooth-Incoming-Port":
+        if platform == 'Linux' or 'Darwin' or 'posix':
+            command = home + "/.platformio/penv/bin/platformio"
+            args = " run --target upload --upload-port " + port
+            p = subprocess.Popen(command + args, stdout=subprocess.PIPE, shell=True)
+            (output, err) = p.communicate()
+            p_status = p.wait()
+            print("Command output : ", output)
+            print("Command exit status/return code : ", p_status)
+            if p_status > 1:
+                unsuccessful.append(serial_device.device)
+            else:
+                successful.append(serial_device.device)
+        else:
+            sys.exit("os " + platform + " unsupported yet!")
+
+print("=============================== UPLOAD RESULTS ===============================")
+print("Successful Devices: " + str(successful))
+print("Unsuccessful Devices: " + str(unsuccessful))

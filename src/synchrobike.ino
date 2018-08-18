@@ -1,7 +1,7 @@
 #include "painlessMesh.h"
 
-#define   MESH_PREFIX     "whateverYouLike"
-#define   MESH_PASSWORD   "somethingSneaky"
+#define   MESH_PREFIX     "synchrobike"
+#define   MESH_PASSWORD   "synchrobike"
 #define   MESH_PORT       5555
 
 painlessMesh  mesh;

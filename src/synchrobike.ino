@@ -281,6 +281,7 @@ void fillnoise8() {
     // With that value, look up the 8 bit colour palette value and assign it to the current LED.
     leds[i] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND);
   }
+  changeDirection();
   if (direction){ // Moving along the distance (that random number we started out with). Vary it a bit with a sine wave.
     dist += beatsin8(10,1,4, mesh.getNodeTime());                        
   } else {

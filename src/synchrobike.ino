@@ -8,7 +8,7 @@ painlessMesh  mesh;
 
 #include <ESP8266TrueRandom.h>
 
-// #define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
+#define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
                             // WS281x LEDs must be unplugged while uploading sketch
 #include <FastLED.h>
 
@@ -17,14 +17,15 @@ painlessMesh  mesh;
 #endif
 
 #define LED_PIN     13 // This pin is ignorred when using FASTLED_ESP8266_DMA
-#define NUM_LEDS    75
-#define BRIGHTNESS  64 // Range 0 - 255
+#define NUM_LEDS    50
+#define BRIGHTNESS  255 // Range 0 - 255
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
+CRGB leds_real[NUM_LEDS];
 
 // Reverse LED strip animations
-#define REVERSE_ANIMATIONS 0
+#define REVERSE_ANIMATIONS 1
 
 #define HOLD_PALETTES_X_TIMES_AS_LONG 10 // Seconds
 
@@ -87,7 +88,7 @@ void setup() {
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds_real, NUM_LEDS).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(  BRIGHTNESS );
 
   set_max_power_in_volts_and_milliamps(5, 500);               // FastLED Power management set at 5V, 500mA.
@@ -160,6 +161,15 @@ void showLEDs(){
   }
 
   _animations[_currentAnimation]();
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    if (REVERSE_ANIMATIONS) {
+      leds_real[i] = leds[NUM_LEDS - 1 - i];
+    } else {
+      leds_real[i] = leds[i];
+    }
+  }
+
   FastLED.show();
 }
 
@@ -189,16 +199,9 @@ void sparkles() {
 
 void showPallet() {
   changePalette();
-  if(REVERSE_ANIMATIONS) {
-   for (int i = NUM_LEDS - 1; i >= 0; i--) {
-      int index = 255 / NUM_LEDS * i;
-      leds[i] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);  
-    }
-  } else {
-    for (int i = 0; i < NUM_LEDS; i++) {
-      int index = 255 / NUM_LEDS * i;
-      leds[i] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);  
-    }
+  for (int i = 0; i < NUM_LEDS; i++) {
+    int index = 255 / NUM_LEDS * i;
+    leds[i] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);  
   }
 }
 

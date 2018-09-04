@@ -1,4 +1,4 @@
-# synchrobike
+# lilydot
 Synchronized LED color palletes and animations.
 
 The goal of this project is to synchronize amazing LED animations and colors across a wiresless node mesh.

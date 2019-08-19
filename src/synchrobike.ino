@@ -102,6 +102,8 @@ void setup() {
                                 CHSV(random(0,255), 255, random(128,255)));
   
   dist = random16(mesh.getNodeId()); // A semi-random number for our noise generator
+
+  firework_interval = getFireWorkInterval();
   
 }
 
@@ -341,17 +343,22 @@ void firework() {
 
   fadeToBlackBy(leds, NUM_LEDS, 16);  // 8 bit, 1 = slow fade, 255 = fast fade
 
-//  if (count > 225) {
-//    for (int i = NUM_LEDS - 20; i < NUM_LEDS; i++) {
-//      index = inoise8(0, dist + lerpVal * yscale) % 255;
-//      leds[i] = ColorFromPalette(CRGBPalette16(CHSV(0, 255, 255),
-//                                               CHSV(40, 255, random(225, 255)),
-//                                               CHSV(80, 255, random(225, 255)),
-//                                               CHSV(140, 255, 255)), index, 255, LINEARBLEND);
-////      leds[i].fadeToBlackBy(1);
-//    }
-//  }
+}
+
+unsigned long prev_firework_millis = 0;
+unsigned long firework_interval = 0;
+void fireWorkInterval() {
+  if( getMillis() - prev_firework_millis > firework_interval || firework_lerpVal < NUM_LEDS ) {
+    firework();
+    if(firework_lerpVal >= NUM_LEDS) {
+      prev_firework_millis = getMillis();
+      firework_interval = getFireWorkInterval();
   
+  }
+}
+
+int getFireWorkInterval() {
+  return random16(1000, 25000, mesh.getNodeId());
 }
 
 float easeOutQuart(float t) {

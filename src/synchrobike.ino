@@ -55,6 +55,8 @@ int       huediff = 256;                   // Range of random #'s to use for hue
 uint8_t firework_eased   = 0;
 uint8_t firework_count   = 0;
 uint8_t firework_lerpVal = 0;
+uint8_t firework_interval;
+uint8_t prev_firework_time
 
 
 void receivedCallback( uint32_t from, String &msg ) {
@@ -104,6 +106,7 @@ void setup() {
   dist = random16(mesh.getNodeId()); // A semi-random number for our noise generator
 
   firework_interval = getFireWorkInterval();
+  firework_delay = random(0,5); // How many seconds to wait before 
   
 }
 
@@ -345,21 +348,45 @@ void firework() {
 
 }
 
-unsigned long prev_firework_millis = 0;
-unsigned long firework_interval = 0;
-void fireWorkInterval() {
-  if( getMillis() - prev_firework_millis > firework_interval || firework_lerpVal < NUM_LEDS ) {
-    firework();
-    if(firework_lerpVal >= NUM_LEDS) {
-      prev_firework_millis = getMillis();
-      firework_interval = getFireWorkInterval();
+// unsigned long prev_firework_millis = 0;
+// unsigned long firework_interval = 0;
+// void fireWorkInterval() {
+//   if( getMillis() - prev_firework_millis > firework_interval || firework_lerpVal < NUM_LEDS ) {
+//     firework();
+//     if(firework_lerpVal >= NUM_LEDS) {
+//       prev_firework_millis = getMillis();
+//       firework_interval = getFireWorkInterval();
   
+//   }
+// }
+
+// int getFireWorkInterval() {
+//   return random16(1000, 25000, mesh.getNodeId());
+// }
+
+
+void fireWorkIntervalSync() {
+  uint32_t second = getSecond() / firework_interval
+  if(prev_firework_time != second) {
+    randomSeed(second)
+    if (random(0,255) % 2) { // Should all launch?
+      firework_lerpVal = 0;
+    } else {
+      randomSeed(mesh.getNodeId()) // Should I launch?
+      if (random(0,255) % 2))  firework_lerpVal = 0;
+    }
+    prev_firework_time = second
+  }
+  if (firework_lerpVal < NUM_LEDS) {
+    fireWork()
+  }
+  if(firework_lerpVal == NUM_LEDS) {
+    randomSeed(second)
+    firework_interval = random(0,3)
   }
 }
 
-int getFireWorkInterval() {
-  return random16(1000, 25000, mesh.getNodeId());
-}
+
 
 float easeOutQuart(float t) {
   return 1-(--t)*t*t*t;

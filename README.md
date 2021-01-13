@@ -7,7 +7,7 @@ The goal of this project is to synchronize amazing LED animations and colors acr
 * 5V Phone Battery Bank
 * USB to Micro USB cable
 * [50pc 12mm WS281x 5v](https://www.aliexpress.com/item/50-Pcs-string-12mm-WS2811-2811-IC-RGB-LED-Pixels-Module-String-Light-Black-Wire-cable/1854864234.html)
-* [WEMOS D1 Mini](https://wiki.wemos.cc/products:d1:d1_mini)
+* [WEMOS D1 Mini](https://www.wemos.cc/en/latest/d1/d1_mini.html)
 * [Male 3 Pin JST Connector](https://www.aliexpress.com/item/Free-Shipping-10pcs-3pin-JST-Connector-Male-Female-plug-and-socket-connecting-Cable-Wire-for-WS2811/32366522079.html)
 * [5M Telescopic Fishing Rod](https://www.aliexpress.com/item/AZJ-Brand-Wholesale-2-1-7-2M-Stream-Fishing-Rod-Glass-Fiber-Telescopic-Fishing-Rod-Ultra/32794897069.html)
 

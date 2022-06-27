@@ -29,6 +29,9 @@ CRGB leds_real[NUM_LEDS];
 
 #define HOLD_PALETTES_X_TIMES_AS_LONG 10 // Seconds
 
+#define HOLD_ANIMATION_X_TIMES_AS_LONG 20 // Seconds
+
+
 CRGBPalette16 currentPalette(CRGB::Black);
 CRGBPalette16 targetPalette(OceanColors_p);
 TBlendType    currentBlending;  // NOBLEND or LINEARBLEND 
@@ -147,7 +150,7 @@ int _currentAnimation = 0;
 void showLEDs(){
   int timeOnAnimation = 20.0;
   int numberOfAnimations = sizeof(_animations) / sizeof(_animations[0]);
-  int animation = (getSecond() / timeOnAnimation) % numberOfAnimations;
+  int animation = (getSecond() / HOLD_ANIMATION_X_TIMES_AS_LONG) % numberOfAnimations;
     
   if (animation != _currentAnimation || force_pallet_change){
     _currentAnimation = animation;

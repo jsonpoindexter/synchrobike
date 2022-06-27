@@ -353,10 +353,19 @@ void confettiNoise8(){
 }
 
 /* =============== FIREWORK ANIMATION =============== */
-
+float flarePos;
+#define NUM_SPARKS 20 // max number (could be NUM_LEDS / 2);
+float sparkPos[NUM_SPARKS];
+float sparkVel[NUM_SPARKS];
+float sparkCol[NUM_SPARKS];
+float gravity = -.004; // m/s/s
+float dying_gravity = gravity; 
+float c1; 
+float c2; 
+int nSparks;
 void firework() {
   changePalette();
-
+  if (firework_lerpVal != NUM_LEDS) { // Firework going up animation
   // Start with easeInVal at 0 and then go to 255 for the full easing.
   firework_eased = easeOutQuart(firework_count / 255.0) * 255; //ease8InOutCubic(count);
   firework_count++;
@@ -371,17 +380,26 @@ void firework() {
 
   fadeToBlackBy(leds, NUM_LEDS, 16);  // 8 bit, 1 = slow fade, 255 = fast fade
 
-//  if (count > 225) {
-//    for (int i = NUM_LEDS - 20; i < NUM_LEDS; i++) {
-//      index = inoise8(0, dist + lerpVal * yscale) % 255;
-//      leds[i] = ColorFromPalette(CRGBPalette16(CHSV(0, 255, 255),
-//                                               CHSV(40, 255, random(225, 255)),
-//                                               CHSV(80, 255, random(225, 255)),
-//                                               CHSV(140, 255, 255)), index, 255, LINEARBLEND);
-////      leds[i].fadeToBlackBy(1);
-//    }
-//  }
-  
+    if (firework_lerpVal == NUM_LEDS) {
+      Serial.println("firework_lerpVal == NUM_LEDS");
+      flarePos = NUM_LEDS - 10;
+      sparkCol[0] = 255; // this will be our known spark 
+      nSparks = 20; // works out to look about right
+      c1 = 120; 
+      c2 = 50; 
+      gravity = -.004; // m/s/s
+      dying_gravity = gravity; 
+      // initialize sparks
+      for (int i = 0; i < nSparks; i++) { 
+        sparkPos[i] = flarePos; sparkVel[i] = (float(random16(0, 20000)) / 10000.0) - 1.0; // from -1 to 1 
+        sparkCol[i] = abs(sparkVel[i]) * 500; // set colors before scaling velocity to keep them bright 
+        sparkCol[i] = constrain(sparkCol[i], 0, 255); 
+        sparkVel[i] *= flarePos / NUM_LEDS; // proportional to height 
+      } 
+    }
+  } else { // Firework exploding animation
+    explode();
+  }
 }
 
 float easeOutQuart(float t) {
@@ -390,4 +408,40 @@ float easeOutQuart(float t) {
 
 float easeOutQuint(float t) {
   return 1+(--t)*t*t*t*t;
+}
+
+/*
+ * Explode!
+ * 
+ * Explosion happens where the flare ended.
+ * Size is proportional to the height.
+ */
+
+void explode() {
+  if(sparkCol[0] > c2/128) { // as long as our known spark is lit, work with all the sparks
+   FastLED.clear();
+    for (int i = 0; i < nSparks; i++) { 
+      sparkPos[i] += sparkVel[i]; 
+      sparkPos[i] = constrain(sparkPos[i], 0, NUM_LEDS); 
+      sparkVel[i] += dying_gravity; 
+      sparkCol[i] *= .99; 
+      sparkCol[i] = constrain(sparkCol[i], 0, 255); // red cross dissolve 
+      if(sparkCol[i] > c1) { // fade white to yellow
+        leds[int(sparkPos[i])] = CRGB(255, 255, (255 * (sparkCol[i] - c1)) / (255 - c1));
+      }
+      else if (sparkCol[i] < c2) { // fade from red to black
+        leds[int(sparkPos[i])] = CRGB((255 * sparkCol[i]) / c2, 0, 0);
+  }
+      else { // fade from yellow to red
+        leds[int(sparkPos[i])] = CRGB(255, (255 * (sparkCol[i] - c2)) / (c1 - c2), 0);
+      }
+    }
+    dying_gravity *= .995; // as sparks burn out they fall slower
+  } else {
+    Serial.println("Done with expplode");
+    FastLED.clear();
+    firework_lerpVal = 0;
+    firework_eased   = 0;
+    firework_count   = 0;
+  }
 }

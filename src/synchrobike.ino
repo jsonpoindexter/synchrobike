@@ -113,7 +113,7 @@ void setup() {
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds_real, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(  BRIGHTNESS );
 
   set_max_power_in_volts_and_milliamps(5, 500);               // FastLED Power management set at 5V, 500mA.

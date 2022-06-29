@@ -367,13 +367,13 @@ void firework() {
   changePalette();
   if (firework_lerpVal != NUM_LEDS) { // Firework going up animation
   // Start with easeInVal at 0 and then go to 255 for the full easing.
-  firework_eased = easeOutQuart(firework_count / 255.0) * 255; //ease8InOutCubic(count);
+    firework_eased = easeOutQuart( firework_count / 255.0) * 255; //ease8InOutCubic(count);
   firework_count++;
 
   // Map it to the number of LED's you have.
   firework_lerpVal = lerp8by8(0, NUM_LEDS, firework_eased);
 
-  uint8_t index = inoise8(0, dist + firework_lerpVal * yscale) % 255;
+    uint8_t index = inoise8(0, firework_lerpVal * yscale);
   // With that value, look up the 8 bit colour palette value and assign it to the current LED.
   leds[firework_lerpVal] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);
   leds[firework_lerpVal].maximizeBrightness();

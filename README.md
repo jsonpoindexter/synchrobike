@@ -3,7 +3,7 @@ Synchronized LED color palletes and animations.
 
 The goal of this project is to synchronize amazing LED animations and colors across a wiresless node mesh.
 
-![](IMG_6202.mov)
+[Video Preview](https://github.com/jsonpoindexter/synchrobike/blob/7a36adf7c99e19d84d8cd89cc18fcecfbe31a66b/IMG_6202.mov)
 
 ## Components
 * 5V Phone Battery Bank

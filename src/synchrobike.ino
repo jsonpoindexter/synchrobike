@@ -381,7 +381,9 @@ void firework() {
   fadeToBlackBy(leds, NUM_LEDS, 16);  // 8 bit, 1 = slow fade, 255 = fast fade
 
     if (firework_lerpVal == NUM_LEDS) {
-      Serial.println("firework_lerpVal == NUM_LEDS");
+      randomSeed(getSecond());
+      // Init Explosion Vars
+      Serial.println("Init explosions");
       flarePos = NUM_LEDS - 10;
       sparkCol[0] = 255; // this will be our known spark 
       nSparks = 20; // works out to look about right
@@ -389,6 +391,7 @@ void firework() {
       c2 = 50; 
       gravity = -.004; // m/s/s
       dying_gravity = gravity; 
+      sparkColor = ColorFromPalette(targetPalette, random(0,255), 255, LINEARBLEND);
       // initialize sparks
       for (int i = 0; i < nSparks; i++) { 
         sparkPos[i] = flarePos; sparkVel[i] = (float(random16(0, 20000)) / 10000.0) - 1.0; // from -1 to 1 
@@ -422,24 +425,20 @@ void explode() {
    FastLED.clear();
     for (int i = 0; i < nSparks; i++) { 
       sparkPos[i] += sparkVel[i]; 
-      sparkPos[i] = constrain(sparkPos[i], 0, NUM_LEDS); 
+      sparkPos[i] = constrain(sparkPos[i], NUM_LEDS-25, NUM_LEDS); 
       sparkVel[i] += dying_gravity; 
       sparkCol[i] *= .99; 
-      sparkCol[i] = constrain(sparkCol[i], 0, 255); // red cross dissolve 
-      if(sparkCol[i] > c1) { // fade white to yellow
-        leds[int(sparkPos[i])] = CRGB(255, 255, (255 * (sparkCol[i] - c1)) / (255 - c1));
-      }
-      else if (sparkCol[i] < c2) { // fade from red to black
-        leds[int(sparkPos[i])] = CRGB((255 * sparkCol[i]) / c2, 0, 0);
-  }
-      else { // fade from yellow to red
-        leds[int(sparkPos[i])] = CRGB(255, (255 * (sparkCol[i] - c2)) / (c1 - c2), 0);
+      randomSeed(i);
+      leds[int(sparkPos[i])] = ColorFromPalette(targetPalette, random(0,255), 255, LINEARBLEND);
+      fadeToBlackBy(leds, NUM_LEDS, 32);
+      if (int(sparkPos[i]) == (NUM_LEDS-25)) {
+        leds[int(sparkPos[i])] = CRGB::Black;
       }
     }
     dying_gravity *= .995; // as sparks burn out they fall slower
   } else {
-    Serial.println("Done with expplode");
     FastLED.clear();
+    force_pallet_change = true;
     firework_lerpVal = 0;
     firework_eased   = 0;
     firework_count   = 0;

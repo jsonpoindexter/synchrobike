@@ -331,8 +331,8 @@ float flarePos;
 float sparkPos[NUM_SPARKS];
 float sparkVel[NUM_SPARKS];
 float sparkCol[NUM_SPARKS];
-float gravity = -.004; // m/s/s
-float dying_gravity = gravity; 
+float gravity; // m/s/s
+float dying_gravity; 
 float c1; 
 float c2; 
 int nSparks;
@@ -364,7 +364,6 @@ void firework() {
       c2 = 50; 
       gravity = -.004; // m/s/s
       dying_gravity = gravity; 
-      sparkColor = ColorFromPalette(targetPalette, random(0,255), 255, LINEARBLEND);
       // initialize sparks
       for (int i = 0; i < nSparks; i++) { 
         sparkPos[i] = flarePos; sparkVel[i] = (float(random16(0, 20000)) / 10000.0) - 1.0; // from -1 to 1 
@@ -402,7 +401,7 @@ void explode() {
       sparkVel[i] += dying_gravity; 
       sparkCol[i] *= .99; 
       randomSeed(i);
-      leds[int(sparkPos[i])] = ColorFromPalette(targetPalette, random(0,255), 255, LINEARBLEND);
+      leds[int(sparkPos[i])] = ColorFromPalette(targetPalette, 255 - i, 255, LINEARBLEND);
       fadeToBlackBy(leds, NUM_LEDS, 32);
       if (int(sparkPos[i]) == (NUM_LEDS-25)) {
         leds[int(sparkPos[i])] = CRGB::Black;

@@ -1,22 +1,44 @@
+#include <I2S.h>
+
 #include "painlessMesh.h"
 
-#define   MESH_PREFIX     "synchrobike"
-#define   MESH_PASSWORD   "synchrobike"
+#define   MESH_PREFIX     "synchrobike-fw"
+#define   MESH_PASSWORD   "synchrobike-fw"
 #define   MESH_PORT       5555
 
 painlessMesh  mesh;
+
+#include <string>
+#include <sstream>
+#include <iomanip>
+String formatUniqueMacAddress(uint64_t mac) {
+    String macStr;
+    macStr.reserve(17); // Reserving space for "XX:XX:XX"
+
+    for (int i = 2; i >= 0; --i) {
+        if (i < 2) {
+            macStr += ":";
+        }
+        macStr += String((mac >> (i * 8)) & 0xFF, HEX);
+    }
+    macStr.toUpperCase();
+    return macStr;
+}
+
+String uniqueHostname = formatUniqueMacAddress(ESP.getChipId());
+
 
 #include <ESP8266TrueRandom.h>
 
 #define FASTLED_ESP8266_DMA // Use ESP8266'a DMA (GPIO3 / Commonly RX)
                             // WS281x LEDs must be unplugged while uploading sketch
-#include <FastLED.h>
+#include<FastLED.h>
 
 #if FASTLED_VERSION < 3001000
 #error "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define LED_PIN     13 // This pin is ignorred when using FASTLED_ESP8266_DMA
+#define LED_PIN     3 // This pin is ignorred when using FASTLED_ESP8266_DMA
 #define NUM_LEDS    50
 #define BRIGHTNESS  255 // Range 0 - 255
 #define LED_TYPE    WS2811
@@ -61,19 +83,19 @@ uint8_t firework_lerpVal = 0;
 
 
 void receivedCallback( uint32_t from, String &msg ) {
-  Serial.printf("SYSTEM: Received from %u msg=%s\n", from, msg.c_str());
+  Serial.printf("[%s] SYSTEM: Received from %u msg=%s\n", uniqueHostname, from, msg.c_str());
 }
 
 void newConnectionCallback(uint32_t nodeId) {
-    Serial.printf("SYSTEM: New Connection, nodeId = %u\n", nodeId);
+    Serial.printf("[%s] SYSTEM: New Connection, nodeId = %u\n", uniqueHostname, nodeId);
 }
 
 void changedConnectionCallback() {
-    Serial.printf("SYSTEM: Changed connections %s\n",mesh.subConnectionJson().c_str());
+    Serial.printf("[%s] SYSTEM: Changed connections %s\n", uniqueHostname, mesh.subConnectionJson().c_str());
 }
 
 void nodeTimeAdjustedCallback(int32_t offset) {
-    Serial.printf("SYSTEM: Adjusted time %u. Offset = %d\n", mesh.getNodeTime(),offset);
+    Serial.printf("[%s] SYSTEM: Adjusted time %u. Offset = %d\n", uniqueHostname, mesh.getNodeTime(),offset);
     force_direction_change = true;
     force_pallet_change = true;
 }
@@ -110,12 +132,17 @@ void setup() {
 
 void loop() {
   mesh.update();
+
+  EVERY_N_MILLISECONDS(5000) {
+    Serial.printf("Free Heap: %d bytes\n", ESP.getFreeHeap());
+  }
   
   EVERY_N_MILLISECONDS(15) {
     showLEDs();
   }
+
   EVERY_N_MILLISECONDS(1000) {
-    printf("s: %d\n", getSecond());
+    Serial.printf("[%s] second: %d\n", uniqueHostname.c_str(), getSecond());
   }
 }
 
@@ -154,7 +181,7 @@ void showLEDs(){
     
   if (animation != _currentAnimation || force_pallet_change){
     _currentAnimation = animation;
-    Serial.printf("animation: %u\n", _currentAnimation);
+    Serial.printf("[%s] animation: %u\n", uniqueHostname.c_str(), _currentAnimation);
     
     // Do any animation-specific reset here.
     
@@ -212,7 +239,7 @@ void changePalette(){
   // change color pallet every random (s)
   uint32_t second = getSecond() / HOLD_PALETTES_X_TIMES_AS_LONG;
   if ((prev_second != second) || force_pallet_change) {
-      Serial.printf("Change color pallet %u\n", second);
+      Serial.printf("[%s] Change color pallet %u\n", uniqueHostname.c_str(), second);
       randomSeed(second);
       targetPalette = CRGBPalette16(
         CHSV(random(0,255), 255, random(128,255)),
@@ -229,7 +256,7 @@ void changePaletteComplementary(){
   // change color pallet every random (s)
   uint32_t second = getSecond() / HOLD_PALETTES_X_TIMES_AS_LONG;
   if ((prev_second != second) || force_pallet_change) {
-    Serial.printf("Change color pallet %u\n", second);
+    Serial.printf("[%s] Change color pallet %u\n", uniqueHostname.c_str(), second);
     randomSeed(second);
 
     // Color picker: https://alloyui.com/examples/color-picker/hsv

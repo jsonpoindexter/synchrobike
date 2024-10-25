@@ -44,10 +44,17 @@ String uniqueHostname = formatUniqueMacAddress(ESP.getChipId());
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
-CRGB leds_real[NUM_LEDS];
 
 // Reverse LED strip animations
-#define REVERSE_ANIMATIONS 1
+#define REVERSE_ANIMATIONS 0
+
+inline int ledIndex(int i) {
+#if REVERSE_ANIMATIONS
+    return NUM_LEDS - 1 - i;
+#else
+    return i;
+#endif
+}
 
 #define HOLD_PALETTES_X_TIMES_AS_LONG 10 // Seconds
 
@@ -167,9 +174,9 @@ uint32_t getMinute(){
 // Array of animation functions to play through.
 typedef void (*SimplePatternList[])();
 SimplePatternList _animations = {
-  fillNoise, 
-  confettiNoise, 
-  sparkles, 
+  fillNoise,
+  confettiNoise,
+  sparkles,
   firework,
   fireworks,
   fireworkWithBang,
@@ -195,15 +202,6 @@ void showLEDs(){
   }
 
   _animations[_currentAnimation]();
-
-  for (int i = 0; i < NUM_LEDS; i++) {
-    if (REVERSE_ANIMATIONS) {
-      leds_real[i] = leds[NUM_LEDS - 1 - i];
-    } else {
-      leds_real[i] = leds[i];
-    }
-  }
-
   FastLED.show();
 }
 
@@ -235,7 +233,7 @@ void showPallet() {
   changePalette();
   for (int i = 0; i < NUM_LEDS; i++) {
     int index = 255 / NUM_LEDS * i;
-    leds[i] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);  
+    leds[ledIndex(i)] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);
   }
 }
 
@@ -316,7 +314,7 @@ void fillnoise8() {
     // Get a value from the noise function. I'm using both x and y axis.
     uint8_t index = inoise8(0, dist+i* yscale) % 255;
     // With that value, look up the 8 bit colour palette value and assign it to the current LED.
-    leds[i] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND);
+    leds[ledIndex(i)] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND);
   }
   changeDirection();
   if (direction){ // Moving along the distance (that random number we started out with). Vary it a bit with a sine wave.
@@ -344,7 +342,7 @@ void changeDirection(){
 void confetti() {                                             // random colored speckles that blink in and fade smoothly
     fadeToBlackBy(leds, NUM_LEDS, thisfade);                    // Low values = slower fade.
     int pos = random16(NUM_LEDS); 
-    leds[pos] = ColorFromPalette(currentPalette,  thishue + random16(huediff)/4, thisbri, currentBlending);
+    leds[ledIndex(pos)] = ColorFromPalette(currentPalette,  thishue + random16(huediff)/4, thisbri, currentBlending);
     thishue = thishue + thisinc;                                   // It increments here.
 }
 
@@ -352,7 +350,7 @@ void confettiNoise8(){
     fadeToBlackBy(leds, NUM_LEDS, thisfade);   
     int pos = random16(NUM_LEDS);          
     uint8_t index = inoise8(0, dist+pos* yscale) % 255;
-    leds[pos] = ColorFromPalette(currentPalette, index, thisbri, currentBlending);
+    leds[ledIndex(pos)] = ColorFromPalette(currentPalette, index, thisbri, currentBlending);
     dist += beatsin8(10,1,4, millis());       
 }
 
@@ -371,8 +369,8 @@ void firework() {
 
   uint8_t index = inoise8(0, dist + firework_lerpVal * yscale) % 255;
   // With that value, look up the 8 bit colour palette value and assign it to the current LED.
-  leds[firework_lerpVal] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);
-  leds[firework_lerpVal].maximizeBrightness();
+  leds[ledIndex(firework_lerpVal)] = ColorFromPalette(targetPalette, index, 255, LINEARBLEND);
+  leds[ledIndex(firework_lerpVal)].maximizeBrightness();
 
   fadeToBlackBy(leds, NUM_LEDS, 16);  // 8 bit, 1 = slow fade, 255 = fast fade
 }
@@ -394,9 +392,9 @@ float sparkPos[NUM_SPARKS];
 float sparkVel[NUM_SPARKS];
 float sparkCol[NUM_SPARKS];
 float gravity; // m/s/s
-float dying_gravity; 
-float c1; 
-float c2; 
+float dying_gravity;
+float c1;
+float c2;
 int nSparks;
 void fireworkWithBang() {
   changePalette();
@@ -407,20 +405,20 @@ void fireworkWithBang() {
       // Init Explosion Vars
       Serial.println("Init explosions");
       flarePos = NUM_LEDS - 10;
-      sparkCol[0] = 255; // this will be our known spark 
+      sparkCol[0] = 255; // this will be our known spark
       nSparks = 20; // works out to look about right
-      c1 = 120; 
-      c2 = 50; 
+      c1 = 120;
+      c2 = 50;
       gravity = -.004; // m/s/s
-      dying_gravity = gravity; 
+      dying_gravity = gravity;
       // initialize sparks
-      for (int i = 0; i < nSparks; i++) { 
-        sparkPos[i] = flarePos; 
-        sparkVel[i] = (float(random16(0, 20000)) / 10000.0) - 1.0; // from -1 to 1 
-        sparkCol[i] = abs(sparkVel[i]) * 500; // set colors before scaling velocity to keep them bright 
-        sparkCol[i] = constrain(sparkCol[i], 0, 255); 
-        sparkVel[i] *= flarePos / NUM_LEDS; // proportional to height 
-      } 
+      for (int i = 0; i < nSparks; i++) {
+        sparkPos[i] = flarePos;
+        sparkVel[i] = (float(random16(0, 20000)) / 10000.0) - 1.0; // from -1 to 1
+        sparkCol[i] = abs(sparkVel[i]) * 500; // set colors before scaling velocity to keep them bright
+        sparkCol[i] = constrain(sparkCol[i], 0, 255);
+        sparkVel[i] *= flarePos / NUM_LEDS; // proportional to height
+      }
     }
   } else { // Firework exploding animation
     explode();
@@ -430,16 +428,16 @@ void fireworkWithBang() {
 void explode() {
   if(sparkCol[0] > c2/128) { // as long as our known spark is lit, work with all the sparks
    FastLED.clear();
-    for (int i = 0; i < nSparks; i++) { 
-      sparkPos[i] += sparkVel[i]; 
-      sparkPos[i] = constrain(sparkPos[i], NUM_LEDS-25, NUM_LEDS); 
-      sparkVel[i] += dying_gravity; 
-      sparkCol[i] *= .99; 
-      leds[int(sparkPos[i])] = ColorFromPalette(targetPalette, 255 - i, 255, LINEARBLEND);
-      leds[int(sparkPos[i])].maximizeBrightness();
+    for (int i = 0; i < nSparks; i++) {
+      sparkPos[i] += sparkVel[i];
+      sparkPos[i] = constrain(sparkPos[i], NUM_LEDS-25, NUM_LEDS);
+      sparkVel[i] += dying_gravity;
+      sparkCol[i] *= .99;
+      leds[ledIndex(int(sparkPos[i]))] = ColorFromPalette(targetPalette, 255 - i, 255, LINEARBLEND);
+      leds[ledIndex(int(sparkPos[i]))].maximizeBrightness();
       fadeToBlackBy(leds, NUM_LEDS, 32);
       if (int(sparkPos[i]) == (NUM_LEDS-25)) {
-        leds[int(sparkPos[i])] = CRGB::Black;
+        leds[ledIndex(int(sparkPos[i]))] = CRGB::Black;
       }
     }
     dying_gravity *= .995; // as sparks burn out they fall slower
@@ -492,14 +490,14 @@ void fireworks() {
             CHSV(random(0,255), 192, random(128,255)),
             CHSV(random(0,255), 255, random(128,255))
             ),
-          index, 
-          255, 
+          index,
+          255,
           LINEARBLEND
         );
       }
       fireworks_count[i] += 1;
-      leds[fireworks_lerpVal[i]] = ColorFromPalette(fireworks_pallete[i], index, 255, LINEARBLEND);
-      leds[fireworks_lerpVal[i]].maximizeBrightness();
+      leds[ledIndex(fireworks_lerpVal[i])] = ColorFromPalette(fireworks_pallete[i], index, 255, LINEARBLEND);
+      leds[ledIndex(fireworks_lerpVal[i])].maximizeBrightness();
       // Serial.println("LETS GO " + fireworks_lerpVal[i]);
       if (fireworks_lerpVal[i] == 255) {
         // Serial.println(fireworks_lerpVal[i]);
@@ -508,8 +506,8 @@ void fireworks() {
         fireworks_eased[i] = 0;
       }
 
-      
-    }   
-    }   
+
+    }
+    }
   fadeToBlackBy(leds, NUM_LEDS, 16);  // 8 bit, 1 = slow fade, 255 = fast fade
 }

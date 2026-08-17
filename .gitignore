@@ -24,3 +24,8 @@ lib/*
 .idea
 
 .DS_Store
+
+### Python ###
+.venv/
+__pycache__/
+*.py[cod]
